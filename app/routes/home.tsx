@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
+import { Link } from "react-router";
 import type { Route } from "./+types/home";
-import Header, { Nav } from "../components/header";
+import { Nav, BlurIn } from "../components/header";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,24 +12,6 @@ export function meta({}: Route.MetaArgs) {
         "Software crafted with curiosity, dedication, and relentless attention to detail.",
     },
   ];
-}
-
-/* ─── Blur-in wrapper ─── */
-function BlurIn({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) {
-  return (
-    <div
-      className="animate-blur-in"
-      style={{ animationDelay: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
 }
 
 /* ─── Company link with video popup ─── */
@@ -190,45 +173,65 @@ function PhoneMockup({
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <>
+      <BlurIn delay={100}>
+        <section className="pt-10 pb-6">
+          <h1 className="text-[1.35rem] font-semibold text-gray-900 tracking-tight">
+            Haseeb Arshad
+          </h1>
+          <p className="text-[1.05rem] text-gray-500 mt-1">
+            Full-Stack Engineer at <CompanyLink /> — AI &amp; Agentic Systems
+          </p>
+        </section>
+      </BlurIn>
 
-      <main className="max-w-[980px] mx-auto px-6">
-        <BlurIn delay={150}>
-          <section className="pt-10 pb-6">
-            <h1 className="text-[1.35rem] font-semibold text-gray-900 tracking-tight">
-              Haseeb Arshad
-            </h1>
-            <p className="text-[1.05rem] text-gray-500 mt-1">
-              Full-Stack Engineer at <CompanyLink /> — AI &amp; Agentic Systems
-            </p>
-          </section>
-        </BlurIn>
+      <BlurIn delay={220}>
+        <section className="pt-6 pb-8">
+          <p
+            className="text-[2rem] md:text-[2.5rem] leading-[1.2] font-normal text-gray-400 max-w-2xl"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            Building software that disappears — where every detail is
+            intentional, every interaction is seamless, and the craft speaks
+            for itself.
+          </p>
+        </section>
+      </BlurIn>
 
-        <BlurIn delay={300}>
-          <section className="pt-6 pb-8">
-            <p
-              className="text-[2rem] md:text-[2.5rem] leading-[1.2] font-normal text-gray-400 max-w-2xl"
-              style={{ fontFamily: "var(--font-serif)" }}
+      <BlurIn delay={340}>
+        <Nav />
+      </BlurIn>
+
+      <BlurIn delay={460}>
+        <section className="flex gap-6 justify-center pb-12 overflow-hidden">
+          <PhoneMockup variant="accounts" />
+          <PhoneMockup variant="investments" />
+          <PhoneMockup variant="savings" className="hidden md:block" />
+        </section>
+      </BlurIn>
+
+      <BlurIn delay={580}>
+        <div className="flex justify-center pb-24">
+          <Link
+            to="/playground"
+            className="group flex items-center gap-2.5 text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <span className="w-2 h-2 rounded-full bg-gradient-to-br from-indigo-400 to-rose-400 opacity-50 group-hover:opacity-90 transition-opacity" />
+            Explore the Typography Lab
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              className="opacity-30 group-hover:opacity-60 group-hover:translate-x-0.5 transition-all"
             >
-              Software crafted with curiosity and care through relentless
-              iteration and meticulous detail.
-            </p>
-          </section>
-        </BlurIn>
-
-        <BlurIn delay={450}>
-          <Nav />
-        </BlurIn>
-
-        <BlurIn delay={600}>
-          <section className="flex gap-6 justify-center pb-24 overflow-hidden">
-            <PhoneMockup variant="accounts" />
-            <PhoneMockup variant="investments" />
-            <PhoneMockup variant="savings" className="hidden md:block" />
-          </section>
-        </BlurIn>
-      </main>
-    </div>
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </BlurIn>
+    </>
   );
 }

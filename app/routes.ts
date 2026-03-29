@@ -6,4 +6,5 @@ export default [
   route("photos", "routes/photos.tsx"),
   route("connect", "routes/connect.tsx"),
   route("now", "routes/now.tsx"),
+  route("playground", "routes/playground.tsx"),
 ] satisfies RouteConfig;

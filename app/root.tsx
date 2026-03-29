@@ -5,10 +5,12 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLocation,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import Header, { Nav } from "./components/header";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -19,7 +21,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Instrument+Serif:ital@0;1&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap",
   },
 ];
 
@@ -42,7 +44,27 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const location = useLocation();
+  const isHome = location.pathname === "/";
+  const isPlayground = location.pathname === "/playground";
+
+  if (isPlayground) {
+    return <Outlet />;
+  }
+
+  return (
+    <div className="min-h-screen bg-white">
+      <Header />
+      <main className="max-w-[980px] mx-auto px-6">
+        {!isHome && (
+          <div className="animate-blur-in">
+            <Nav />
+          </div>
+        )}
+        <Outlet />
+      </main>
+    </div>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
