@@ -150,7 +150,7 @@ function AnalogClock({ onBook }: { onBook: () => void }) {
 
       <button
         onClick={onBook}
-        className="text-[11px] text-gray-400 hover:text-gray-900 transition-colors mt-1 underline underline-offset-2"
+        className="press text-[11px] text-gray-400 hover:text-gray-900 transition-colors mt-1 underline underline-offset-2"
       >
         Book a meeting
       </button>
@@ -174,6 +174,22 @@ function DateBadge() {
   const handleBook = () => {
     window.open("https://calendly.com", "_blank");
   };
+
+  /* Close on scroll (the header isn't sticky, so the panel would otherwise
+     drift off-screen) and on Escape. */
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("scroll", close, { passive: true });
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("scroll", close);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   return (
     <div className="relative z-50">
@@ -226,7 +242,7 @@ function Nav() {
 
   const items = [
     { label: "Work", to: "/work" },
-    { label: "Photos", to: "/photos" },
+    { label: "Blog", to: "/blog" },
     { label: "Connect", to: "/connect" },
     { label: "Now", to: "/now" },
   ];
@@ -259,7 +275,7 @@ function Nav() {
       ...pos,
       opacity: 1,
       transition: hasMounted.current
-        ? "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)"
+        ? "transform 0.45s var(--ease-out), width 0.45s var(--ease-out), opacity 0.35s ease"
         : "opacity 0.35s ease",
     });
     if (!hasMounted.current) hasMounted.current = true;
@@ -273,7 +289,8 @@ function Nav() {
       ...s,
       ...pos,
       opacity: 1,
-      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+      transition:
+        "transform 0.28s var(--ease-out), width 0.28s var(--ease-out), opacity 0.2s ease",
     }));
   };
 
@@ -292,7 +309,8 @@ function Nav() {
     setPillStyle((s) => ({
       ...s,
       ...pos,
-      transition: "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+      transition:
+        "transform 0.28s var(--ease-out), width 0.28s var(--ease-out)",
     }));
   };
 

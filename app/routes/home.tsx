@@ -2,10 +2,11 @@ import { useState, useRef } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/home";
 import { Nav, BlurIn } from "../components/header";
+import { favorites } from "../data/blogs";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Haseeb Arshad — Full-Stack Engineer" },
+    { title: "Haseeb Arshad — Founding Full-Stack & Platform Engineer" },
     {
       name: "description",
       content:
@@ -36,7 +37,7 @@ function CompanyLink() {
     >
       <a
         href="#"
-        className="text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-900 transition-all"
+        className="text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-900 transition-[text-decoration-color] duration-200 ease-out"
       >
         Summon Electronics
       </a>
@@ -63,111 +64,70 @@ function CompanyLink() {
   );
 }
 
-/* ─── Phone Mockup ─── */
-function PhoneMockup({
-  variant,
-  className = "",
-}: {
-  variant: "accounts" | "investments" | "savings";
-  className?: string;
-}) {
-  const time =
-    variant === "accounts" ? "5:30" : variant === "investments" ? "5:32" : "5:31";
+/* ─── Selected Reading (home preview of favorite blogs) ─── */
+function SelectedReading() {
+  const featured = favorites.filter((b) => b.featured).slice(0, 3);
 
   return (
-    <div
-      className={`relative w-[280px] shrink-0 ${className}`}
-      style={{ aspectRatio: "9/19" }}
-    >
-      <div className="absolute inset-0 rounded-[2.5rem] bg-black shadow-2xl overflow-hidden border-[3px] border-gray-800">
-        <div className="flex items-center justify-between px-6 pt-3 pb-1">
-          <div className="flex items-center gap-1">
-            <span className="text-white text-xs font-semibold">{time}</span>
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="white" className="ml-0.5">
-              <path d="M4 0L6 3H2L4 0Z" />
-            </svg>
-          </div>
-          <div className="w-20 h-6 bg-black rounded-full" />
-          <div className="flex items-center gap-1">
-            <div className="flex gap-[2px]">
-              {[4, 6, 8, 10].map((h, i) => (
-                <div key={i} className="w-[3px] bg-white rounded-sm" style={{ height: `${h}px` }} />
-              ))}
-            </div>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="white" className="opacity-80">
-              <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3a4.237 4.237 0 00-6 0zm-4-4l2 2a7.074 7.074 0 0110 0l2-2C15.14 9.14 8.87 9.14 5 13z" />
-            </svg>
-            <div className="flex items-center bg-white/20 rounded-sm px-1">
-              <span className="text-white text-[9px] font-bold">67</span>
-            </div>
-          </div>
-        </div>
-        <div className="px-5 pt-2 bg-gradient-to-b from-[#0a1628] to-[#0f1d32] h-full">
-          <div className="flex items-center justify-between mb-4">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6">
-              <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" />
-              <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-            </svg>
-            <span className="text-white text-lg font-light tracking-wide">Copilot</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" opacity="0.6">
-              <rect x="3" y="3" width="7" height="7" rx="1" />
-              <rect x="14" y="3" width="7" height="7" rx="1" />
-              <rect x="3" y="14" width="7" height="7" rx="1" />
-              <rect x="14" y="14" width="7" height="7" rx="1" />
-            </svg>
-          </div>
-          <div className="flex gap-2 mb-5">
-            <span className="text-xs px-3 py-1.5 rounded-full bg-indigo-600 text-white font-medium">Accounts</span>
-            <span className="text-xs px-3 py-1.5 rounded-full text-gray-400">Investments</span>
-            <span className="text-xs px-3 py-1.5 rounded-full text-gray-400">Tra...</span>
-          </div>
-          {variant === "accounts" && (
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 text-xs">&#9656;</span>
-                  <span className="text-white text-sm font-medium">Credit Cards</span>
-                </div>
-                <span className="text-gray-400 text-xs">$4,338.45</span>
-                <span className="text-indigo-400 text-xs">add &#8250;</span>
-              </div>
-              <div className="bg-[#162040] rounded-xl p-3">
-                <div className="bg-blue-600 rounded px-2 py-0.5 text-[10px] text-white font-bold w-fit">CHASE</div>
-                <div className="flex gap-6 text-xs text-gray-400 mt-2">
-                  <span>$44,905</span>
-                  <span>$99,000</span>
-                </div>
-              </div>
-            </div>
-          )}
-          {variant === "investments" && (
-            <div>
-              <div className="bg-[#162040] rounded-xl p-3 mb-3">
-                <span className="text-gray-400 text-sm">Apple Cash</span>
-              </div>
-              <div className="flex gap-6 mt-3">
-                <span className="text-white text-lg font-medium">$4.96</span>
-                <span className="text-white text-lg font-medium">61.58%<span className="text-red-400 text-xs ml-0.5">&#9662;</span></span>
-              </div>
-            </div>
-          )}
-          {variant === "savings" && (
-            <div>
-              <div className="mb-3">
-                <span className="text-emerald-400 text-xs px-2 py-0.5 rounded bg-emerald-400/10">Savings</span>
-              </div>
-              <div className="bg-[#162040] rounded-xl p-3 mb-3">
-                <div className="w-5 h-5 bg-gray-600 rounded" />
-              </div>
-              <div className="flex gap-6 mt-3 text-sm">
-                <span className="text-white">$4.96</span>
-                <span className="text-white">61.58%<span className="text-red-400 ml-0.5">&#9662;</span></span>
-              </div>
-            </div>
-          )}
-        </div>
+    <section className="pb-12">
+      <div className="flex items-baseline justify-between mb-5">
+        <h2 className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+          Selected reading
+        </h2>
+        <Link
+          to="/blog"
+          className="group flex items-center gap-1 text-[13px] text-gray-400 hover:text-gray-700 transition-colors"
+        >
+          All blogs
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="opacity-50 group-hover:translate-x-0.5 transition-transform duration-200 ease-out"
+          >
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
-    </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {featured.map((blog) => (
+          <a
+            key={blog.url}
+            href={blog.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group rounded-xl border border-gray-100 p-4 hover:border-gray-200 hover:bg-gray-50/50 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-gray-900 font-medium text-sm group-hover:underline underline-offset-2">
+                {blog.title}
+              </span>
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className="text-gray-300 group-hover:text-gray-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all duration-200 ease-out"
+              >
+                <path d="M7 17L17 7M17 7H8M17 7v9" />
+              </svg>
+            </div>
+            <p className="text-gray-500 text-[13px] leading-relaxed mt-2">
+              {blog.note}
+            </p>
+            <span className="text-gray-400 text-xs mt-3 block">
+              {blog.author}
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -180,7 +140,8 @@ export default function Home() {
             Haseeb Arshad
           </h1>
           <p className="text-[1.05rem] text-gray-500 mt-1">
-            Full-Stack Engineer at <CompanyLink /> — AI &amp; Agentic Systems
+            Founding Full-Stack &amp; Platform Engineer at <CompanyLink /> — AI
+            &amp; Agentic Systems
           </p>
         </section>
       </BlurIn>
@@ -203,11 +164,7 @@ export default function Home() {
       </BlurIn>
 
       <BlurIn delay={460}>
-        <section className="flex gap-6 justify-center pb-12 overflow-hidden">
-          <PhoneMockup variant="accounts" />
-          <PhoneMockup variant="investments" />
-          <PhoneMockup variant="savings" className="hidden md:block" />
-        </section>
+        <SelectedReading />
       </BlurIn>
 
       <BlurIn delay={580}>
@@ -216,8 +173,8 @@ export default function Home() {
             to="/playground"
             className="group flex items-center gap-2.5 text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <span className="w-2 h-2 rounded-full bg-gradient-to-br from-indigo-400 to-rose-400 opacity-50 group-hover:opacity-90 transition-opacity" />
-            Explore the Typography Lab
+            <span className="w-2 h-2 rounded-full bg-[#78d6dc] opacity-55 group-hover:opacity-95 transition-opacity" />
+            Enter the Physics Field Atlas
             <svg
               width="14"
               height="14"
@@ -225,7 +182,7 @@ export default function Home() {
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="opacity-30 group-hover:opacity-60 group-hover:translate-x-0.5 transition-all"
+              className="opacity-30 group-hover:opacity-60 group-hover:translate-x-0.5 transition-[opacity,transform] duration-200 ease-out"
             >
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>

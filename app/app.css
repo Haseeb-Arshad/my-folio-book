@@ -11,7 +11,14 @@
 @theme {
   --font-sans: "ABC Diatype", ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-display: "Outfit", "ABC Diatype", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  /* ── Easing tokens (stronger than the CSS built-ins) ── */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html {
@@ -63,8 +70,20 @@ body {
   }
 }
 .animate-blur-in {
-  opacity: 0;
-  animation: blurIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  /* `backwards` (not `forwards`) so the element keeps the hidden 0% frame during
+     its delay, then reverts to a plain transform/filter-free state once done.
+     A lingering transform/filter would create a stacking context + containing
+     block, trapping descendant popovers (e.g. the date dropdown) under later
+     page content. */
+  animation: blurIn 0.6s var(--ease-out) backwards;
+}
+
+/* ── Press feedback: any pressable element feels like it heard the tap ── */
+.press {
+  transition: transform 160ms var(--ease-out);
+}
+.press:active {
+  transform: scale(0.97);
 }
 
 /* ── Scale-fade for inline expansions ── */
@@ -93,10 +112,12 @@ body {
   }
 }
 .animate-expand-in {
-  animation: expandIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: var(--expand-origin, top right);
+  animation: expandIn 0.22s var(--ease-out) forwards;
 }
 .animate-expand-out {
-  animation: expandOut 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: var(--expand-origin, top right);
+  animation: expandOut 0.16s var(--ease-out) forwards;
 }
 
 /* ── Video popup ── */
@@ -111,5 +132,46 @@ body {
   }
 }
 .animate-video-in {
-  animation: videoIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top left;
+  animation: videoIn 0.22s var(--ease-out) forwards;
+}
+
+@keyframes dataShimmer {
+  0% {
+    opacity: 0.35;
+    transform: translateX(-6px);
+  }
+  50% {
+    opacity: 0.72;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateX(6px);
+  }
+}
+.animate-data-shimmer {
+  animation: dataShimmer 1.4s ease-in-out infinite;
+}
+
+/* ── Reduced motion: keep comprehension cues, drop the movement ── */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    scroll-behavior: auto;
+  }
+  .animate-blur-in,
+  .animate-expand-in,
+  .animate-expand-out,
+  .animate-video-in {
+    animation-duration: 0.01ms;
+    animation-delay: 0ms !important;
+  }
+  .animate-data-shimmer {
+    animation: none;
+    opacity: 0.5;
+  }
+  .press:active {
+    transform: none;
+  }
 }
