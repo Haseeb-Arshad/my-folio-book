@@ -24,20 +24,6 @@ export type Post = {
 /* ─── Blogs I keep coming back to ─── */
 export const favorites: Blog[] = [
   {
-    title: "Overreacted",
-    author: "Dan Abramov",
-    url: "https://overreacted.io",
-    note: "First-principles mental models for React and JS internals.",
-    featured: true,
-  },
-  {
-    title: "Lethain",
-    author: "Will Larson",
-    url: "https://lethain.com",
-    note: "Engineering strategy and the craft of scaling teams.",
-    featured: true,
-  },
-  {
     title: "Simon Willison",
     author: "Simon Willison",
     url: "https://simonwillison.net",
@@ -45,16 +31,36 @@ export const favorites: Blog[] = [
     featured: true,
   },
   {
-    title: "Joel on Software",
-    author: "Joel Spolsky",
-    url: "https://www.joelonsoftware.com",
-    note: "Timeless essays on shipping software people actually use.",
+    title: "How to Do Great Work",
+    author: "Paul Graham",
+    url: "https://www.paulgraham.com/greatwork.html",
+    note: "The closest thing there is to a manual for work that matters.",
+    featured: true,
   },
   {
-    title: "The Pragmatic Engineer",
-    author: "Gergely Orosz",
-    url: "https://blog.pragmaticengineer.com",
-    note: "How big engineering orgs actually build and operate.",
+    title: "The AI Revolution: Our Immortality or Extinction",
+    author: "Tim Urban",
+    url: "https://waitbutwhy.com/2015/01/artificial-intelligence-revolution-2.html",
+    note: "A patient, vivid walk to the edge of superintelligence.",
+    featured: true,
+  },
+  {
+    title: "Artificial Creativity Is Unstoppable",
+    author: "Aeon",
+    url: "https://aeon.co/videos/artificial-creativity-is-unstoppable-grappling-with-its-ethics-is-up-to-us",
+    note: "A short film on machine creativity — and why the ethics are ours to settle.",
+  },
+  {
+    title: "Biological Evolution and Information",
+    author: "Brian Potter",
+    url: "https://www.construction-physics.com/p/biological-evolution-and-information",
+    note: "Evolution read as an information-processing system.",
+  },
+  {
+    title: "Tensorlabbet",
+    author: "Taro Langner",
+    url: "https://tensorlabbet.com/",
+    note: "A blog of deep learnings on where AI research actually stands.",
   },
 ];
 

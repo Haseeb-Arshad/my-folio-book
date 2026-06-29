@@ -12,13 +12,17 @@ export type Project = {
   /* live demo, or null if not deployed */
   live: string | null;
   code: string;
-  /* single-letter accent + tailwind bg class */
+  /* the project's own logo (shown on the card); falls back to letter + color */
+  logo?: string;
+  /* single-letter accent + tailwind bg class (fallback when no logo) */
   letter: string;
   color: string;
   /* "Building" badge for work-in-progress */
   status?: "building";
   /* extra links beyond Live/Code, e.g. npm / PyPI distributions */
   links?: { label: string; href: string }[];
+  /* hover preview — image + blurb pulled from the live site */
+  popup?: { image: string; description: string };
 };
 
 export const projects: Project[] = [
@@ -32,6 +36,11 @@ export const projects: Project[] = [
     code: "https://github.com/Haseeb-Arshad/TaskHive",
     letter: "T",
     color: "bg-violet-600",
+    popup: {
+      image: "/previews/taskhive.png",
+      description:
+        "Post tasks, and AI agents browse, claim, and complete them — tracked through reputation credits. A marketplace built for the agentic era.",
+    },
   },
   {
     name: "Sayings",
@@ -39,10 +48,16 @@ export const projects: Project[] = [
       "A voice-first social platform — share spoken posts that AI transcribes, reads for emotion, and distills into topics.",
     year: "2026",
     stack: ["React", "ElevenLabs", "Speech-to-Text", "Emotion AI"],
-    live: "https://sayings-eight.vercel.app",
+    live: "https://sayings.me",
     code: "https://github.com/Haseeb-Arshad/sayings",
+    logo: "/logos/sayings.png",
     letter: "S",
     color: "bg-rose-500",
+    popup: {
+      image: "/previews/sayings.png",
+      description:
+        "A voice-first social platform where you speak instead of type — AI transcribes each post, reads it for emotion, and surfaces the topics underneath.",
+    },
   },
   {
     name: "Gideon",
@@ -57,6 +72,23 @@ export const projects: Project[] = [
     status: "building",
   },
   {
+    name: "Harsukh Residences",
+    tagline:
+      "Developed at Almaymaar — a premium real-estate experience for a luxury mountain-apartment development in Galyat, with an immersive 3D building explorer, interactive SVG floor plans, and Unity WebGL.",
+    year: "2024",
+    stack: ["Next.js 14", "Framer Motion", "Redux", "WebGL"],
+    live: "https://theharsukh.com",
+    code: "https://github.com/Haseeb-Arshad/harsukh",
+    logo: "/logos/harsukh.png",
+    letter: "H",
+    color: "bg-stone-700",
+    popup: {
+      image: "/previews/harsukh.webp",
+      description:
+        "Experience luxury living at its finest in Galyat. Harsukh Residences offers premium apartments with panoramic mountain views, smart home features, and world-class amenities.",
+    },
+  },
+  {
     name: "Milo",
     tagline:
       "A household-operations agent that mines family messages for school tasks, payments, and reminders — with safe approvals.",
@@ -66,28 +98,6 @@ export const projects: Project[] = [
     code: "https://github.com/Haseeb-Arshad/milo-app",
     letter: "M",
     color: "bg-emerald-600",
-  },
-  {
-    name: "SearchBox",
-    tagline:
-      "A semantic product-search engine over regional brand stores, with a Go backend wired through the Model Context Protocol.",
-    year: "2025",
-    stack: ["Go", "MCP", "TypeScript", "Semantic Search"],
-    live: null,
-    code: "https://github.com/Haseeb-Arshad/searchbox",
-    letter: "S",
-    color: "bg-sky-600",
-  },
-  {
-    name: "DialogFlow Form",
-    tagline:
-      "AI-native forms that replace static surveys with a conversation — questions adapt as people chat.",
-    year: "2025",
-    stack: ["React", "TypeScript", "OpenAI"],
-    live: "https://dialogflow-form.vercel.app",
-    code: "https://github.com/Haseeb-Arshad/dialogflow-form",
-    letter: "D",
-    color: "bg-indigo-600",
   },
   {
     name: "TraceCLI",
@@ -105,15 +115,20 @@ export const projects: Project[] = [
     ],
   },
   {
-    name: "Wiki Asterick",
+    name: "WikiAsterisk",
     tagline:
-      "A magazine-style Wikipedia reader with section extraction, references, highlights, and a text-mining-ready structure.",
+      "Read Wikipedia with the depth and care of a magazine — section extraction, references, highlights, and a text-mining-ready structure.",
     year: "2026",
     stack: ["React", "Vite", "Express", "TanStack"],
     live: "https://wiki-asterick.vercel.app",
     code: "https://github.com/Haseeb-Arshad/wiki-asterick",
-    letter: "W",
+    letter: "✶",
     color: "bg-amber-500",
+    popup: {
+      image: "/previews/wiki-asterick.png",
+      description:
+        "A magazine-style Wikipedia reader — beautiful typography, pull-out references, and highlights that turn any article into a long-form read.",
+    },
   },
   {
     name: "Coffee Club",

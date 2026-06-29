@@ -6,7 +6,7 @@ import { favorites } from "../data/blogs";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Haseeb Arshad — Founding Full-Stack & Platform Engineer" },
+    { title: "Haseeb Arshad — Founding Full-Stack & Principal Engineer" },
     {
       name: "description",
       content:
@@ -35,10 +35,7 @@ function CompanyLink() {
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
     >
-      <a
-        href="#"
-        className="text-gray-900 underline underline-offset-2 decoration-gray-300 hover:decoration-gray-900 transition-[text-decoration-color] duration-200 ease-out"
-      >
+      <a href="#" className="text-gray-900">
         Summon Electronics
       </a>
 
@@ -140,7 +137,7 @@ export default function Home() {
             Haseeb Arshad
           </h1>
           <p className="text-[1.05rem] text-gray-500 mt-1">
-            Founding Full-Stack &amp; Platform Engineer at <CompanyLink /> — AI
+            Founding Full-Stack &amp; Principal Engineer at <CompanyLink /> — AI
             &amp; Agentic Systems
           </p>
         </section>
@@ -152,9 +149,9 @@ export default function Home() {
             className="text-[2rem] md:text-[2.5rem] leading-[1.2] font-normal text-gray-400 max-w-2xl"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            Building software that disappears — where every detail is
-            intentional, every interaction is seamless, and the craft speaks
-            for itself.
+            Mind and hand, in equal measure. I build software slowly and
+            deliberately — until the craft turns invisible, and only the
+            feeling is left.
           </p>
         </section>
       </BlurIn>
@@ -165,29 +162,6 @@ export default function Home() {
 
       <BlurIn delay={460}>
         <SelectedReading />
-      </BlurIn>
-
-      <BlurIn delay={580}>
-        <div className="flex justify-center pb-24">
-          <Link
-            to="/playground"
-            className="group flex items-center gap-2.5 text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <span className="w-2 h-2 rounded-full bg-[#78d6dc] opacity-55 group-hover:opacity-95 transition-opacity" />
-            Enter the Physics Field Atlas
-            <svg
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              className="opacity-30 group-hover:opacity-60 group-hover:translate-x-0.5 transition-[opacity,transform] duration-200 ease-out"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
       </BlurIn>
     </>
   );

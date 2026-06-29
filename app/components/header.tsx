@@ -172,7 +172,7 @@ function DateBadge() {
   );
 
   const handleBook = () => {
-    window.open("https://calendly.com", "_blank");
+    window.open("https://calendly.com/haseebarshad/30min", "_blank");
   };
 
   /* Close on scroll (the header isn't sticky, so the panel would otherwise

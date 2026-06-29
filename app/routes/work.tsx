@@ -1,5 +1,6 @@
+import { useState, useRef } from "react";
 import { BlurIn } from "../components/header";
-import { projects } from "../data/projects";
+import { projects, type Project } from "../data/projects";
 import { experience } from "../data/experience";
 
 export function meta() {
@@ -50,13 +51,130 @@ function ProjectLink({
   );
 }
 
+/* ─── Project card (with optional Summon-style hover preview) ─── */
+function ProjectCard({ p }: { p: Project }) {
+  const [showPreview, setShowPreview] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const primary = p.live ?? p.code;
+  const hasPreview = Boolean(p.popup);
+
+  const handleEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setShowPreview(true);
+  };
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setShowPreview(false), 250);
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={hasPreview ? handleEnter : undefined}
+      onMouseLeave={hasPreview ? handleLeave : undefined}
+    >
+      <a
+        href={primary}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group block rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1"
+      >
+        <div className="flex items-start gap-4">
+          {p.logo ? (
+            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
+              <img
+                src={p.logo}
+                alt={`${p.name} logo`}
+                className="w-full h-full object-contain p-1"
+              />
+            </div>
+          ) : (
+            <div
+              className={`w-10 h-10 shrink-0 ${p.color} rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm`}
+            >
+              {p.letter}
+            </div>
+          )}
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-baseline justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
+                  {p.name}
+                </h3>
+                {p.status === "building" && (
+                  <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-data-shimmer" />
+                    Building
+                  </span>
+                )}
+              </div>
+              <span className="text-gray-400 text-xs shrink-0 font-mono">
+                {p.year}
+              </span>
+            </div>
+
+            <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">
+              {p.tagline}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-1.5 mt-3">
+              {p.stack.map((tag) => (
+                <span
+                  key={tag}
+                  className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 mt-4">
+              {p.live && <ProjectLink href={p.live} label="Live" external />}
+              {p.links ? (
+                p.links.map((l) => (
+                  <ProjectLink
+                    key={l.href}
+                    href={l.href}
+                    label={l.label}
+                    external
+                  />
+                ))
+              ) : (
+                <ProjectLink href={p.code} label="Code" external />
+              )}
+            </div>
+          </div>
+        </div>
+      </a>
+
+      {/* hover preview — image + blurb from the live site */}
+      {hasPreview && showPreview && p.popup && (
+        <div className="absolute top-full right-4 mt-1 z-50 animate-video-in pointer-events-none">
+          <div className="w-[360px] rounded-xl overflow-hidden shadow-2xl border border-gray-800 bg-black">
+            <img
+              src={p.popup.image}
+              alt={`${p.name} — preview`}
+              loading="lazy"
+              className="w-full h-auto block"
+            />
+            <p className="text-[12px] text-gray-300 leading-relaxed p-3.5">
+              {p.popup.description}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Work() {
   return (
     <section className="pb-24">
       <BlurIn>
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Work</h2>
         <p className="text-gray-500 text-sm mb-8 border-b border-gray-100 pb-6">
-          Platform engineering, AI systems, and full-stack craft.
+          Principal engineering across AI systems, agentic products, and
+          full-stack craft.
         </p>
       </BlurIn>
 
@@ -115,79 +233,11 @@ export default function Work() {
       </BlurIn>
 
       <div className="flex flex-col gap-2">
-        {projects.map((p, i) => {
-          const primary = p.live ?? p.code;
-          return (
-            <BlurIn key={p.name} delay={80 + i * 90}>
-              <a
-                href={primary}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1"
-              >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`w-10 h-10 shrink-0 ${p.color} rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm`}
-                  >
-                    {p.letter}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
-                          {p.name}
-                        </h3>
-                        {p.status === "building" && (
-                          <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-data-shimmer" />
-                            Building
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-gray-400 text-xs shrink-0 font-mono">
-                        {p.year}
-                      </span>
-                    </div>
-
-                    <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">
-                      {p.tagline}
-                    </p>
-
-                    <div className="flex flex-wrap items-center gap-1.5 mt-3">
-                      {p.stack.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 mt-4">
-                      {p.live && (
-                        <ProjectLink href={p.live} label="Live" external />
-                      )}
-                      {p.links ? (
-                        p.links.map((l) => (
-                          <ProjectLink
-                            key={l.href}
-                            href={l.href}
-                            label={l.label}
-                            external
-                          />
-                        ))
-                      ) : (
-                        <ProjectLink href={p.code} label="Code" external />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </a>
-            </BlurIn>
-          );
-        })}
+        {projects.map((p, i) => (
+          <BlurIn key={p.name} delay={80 + i * 90}>
+            <ProjectCard p={p} />
+          </BlurIn>
+        ))}
       </div>
 
       <BlurIn delay={80 + projects.length * 90}>
