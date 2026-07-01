@@ -29,7 +29,7 @@ export const projects: Project[] = [
   {
     name: "TaskHive",
     tagline:
-      "A marketplace where humans post tasks and AI agents browse, claim, and deliver work for reputation credits — built on a Skill/Tools/Software 'Trinity' architecture with REST and MCP entry points.",
+      "A marketplace where humans post tasks and AI agents browse, claim, and deliver work for reputation credits, built on a Skill/Tools/Software 'Trinity' architecture with REST and MCP entry points.",
     year: "2026",
     stack: ["Next.js", "Python", "MCP", "AI Agents"],
     live: "https://task-hive-sigma.vercel.app",
@@ -39,13 +39,13 @@ export const projects: Project[] = [
     popup: {
       image: "/previews/taskhive.png",
       description:
-        "Post tasks, and AI agents browse, claim, and complete them — tracked through reputation credits. A marketplace built for the agentic era.",
+        "Post tasks, and AI agents browse, claim, and complete them, tracked through reputation credits. A marketplace built for the agentic era.",
     },
   },
   {
     name: "Sayings",
     tagline:
-      "A voice-first social platform — share spoken posts that AI transcribes, reads for emotion, and distills into topics.",
+      "A voice-first social platform: share spoken posts that AI transcribes, reads for emotion, and distills into topics.",
     year: "2026",
     stack: ["React", "ElevenLabs", "Speech-to-Text", "Emotion AI"],
     live: "https://sayings.me",
@@ -56,13 +56,13 @@ export const projects: Project[] = [
     popup: {
       image: "/previews/sayings.png",
       description:
-        "A voice-first social platform where you speak instead of type — AI transcribes each post, reads it for emotion, and surfaces the topics underneath.",
+        "A voice-first social platform where you speak instead of type. AI transcribes each post, reads it for emotion, and surfaces the topics underneath.",
     },
   },
   {
     name: "Gideon",
     tagline:
-      "A voice-first subconscious AI — ask by voice and the page renders a bespoke generated answer (summary, comparison, sources, follow-ups) instead of a wall of chat. Currently building.",
+      "A voice-first subconscious AI: ask by voice and the page renders a bespoke generated answer (summary, comparison, sources, follow-ups) instead of a wall of chat. Currently building.",
     year: "2026",
     stack: ["React 19", "TanStack", "Framer Motion", "Vite"],
     live: null,
@@ -74,7 +74,7 @@ export const projects: Project[] = [
   {
     name: "Harsukh Residences",
     tagline:
-      "Developed at Almaymaar — a premium real-estate experience for a luxury mountain-apartment development in Galyat, with an immersive 3D building explorer, interactive SVG floor plans, and Unity WebGL.",
+      "Developed at Almaymaar: a premium real-estate experience for a luxury mountain-apartment development in Galyat, with an immersive 3D building explorer, interactive SVG floor plans, and Unity WebGL.",
     year: "2024",
     stack: ["Next.js 14", "Framer Motion", "Redux", "WebGL"],
     live: "https://theharsukh.com",
@@ -91,7 +91,7 @@ export const projects: Project[] = [
   {
     name: "Milo",
     tagline:
-      "A household-operations agent that mines family messages for school tasks, payments, and reminders — with safe approvals.",
+      "A household-operations agent that mines family messages for school tasks, payments, and reminders, with safe approvals.",
     year: "2026",
     stack: ["TypeScript", "OpenAI", "Prisma", "AI Agent"],
     live: null,
@@ -102,7 +102,7 @@ export const projects: Project[] = [
   {
     name: "TraceCLI",
     tagline:
-      "A privacy-first, terminal-native activity tracker and AI productivity coach — local-only SQLite, focus mode with live distraction detection, and natural-language queries over your habits. Shipped as both an npm (Node) and a pip (Python) CLI.",
+      "A privacy-first, terminal-native activity tracker and AI productivity coach: local-only SQLite, focus mode with live distraction detection, and natural-language queries over your habits. Shipped as both an npm (Node) and a pip (Python) CLI.",
     year: "2026",
     stack: ["Node", "Python", "SQLite", "Local AI"],
     live: null,
@@ -117,7 +117,7 @@ export const projects: Project[] = [
   {
     name: "WikiAsterisk",
     tagline:
-      "Read Wikipedia with the depth and care of a magazine — section extraction, references, highlights, and a text-mining-ready structure.",
+      "Read Wikipedia with the depth and care of a magazine: section extraction, references, highlights, and a text-mining-ready structure.",
     year: "2026",
     stack: ["React", "Vite", "Express", "TanStack"],
     live: "https://wiki-asterick.vercel.app",
@@ -127,13 +127,13 @@ export const projects: Project[] = [
     popup: {
       image: "/previews/wiki-asterick.png",
       description:
-        "A magazine-style Wikipedia reader — beautiful typography, pull-out references, and highlights that turn any article into a long-form read.",
+        "A magazine-style Wikipedia reader: beautiful typography, pull-out references, and highlights that turn any article into a long-form read.",
     },
   },
   {
     name: "Coffee Club",
     tagline:
-      "Map-first cafe discovery for Islamabad — community picks, moderated memories, and an admin review flow on Supabase.",
+      "Map-first cafe discovery for Islamabad: community picks, moderated memories, and an admin review flow on Supabase.",
     year: "2026",
     stack: ["React", "Supabase", "Leaflet", "TanStack"],
     live: null,

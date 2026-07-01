@@ -48,7 +48,7 @@ export const favorites: Blog[] = [
     title: "Artificial Creativity Is Unstoppable",
     author: "Aeon",
     url: "https://aeon.co/videos/artificial-creativity-is-unstoppable-grappling-with-its-ethics-is-up-to-us",
-    note: "A short film on machine creativity — and why the ethics are ours to settle.",
+    note: "A short film on machine creativity, and why the ethics are ours to settle.",
   },
   {
     title: "Biological Evolution and Information",

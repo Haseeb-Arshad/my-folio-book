@@ -3,7 +3,7 @@ import { favorites, posts } from "../data/blogs";
 
 export function meta() {
   return [
-    { title: "Blog — Haseeb Arshad" },
+    { title: "Blog · Haseeb Arshad" },
     {
       name: "description",
       content: "Writing, and a running list of the blogs I keep coming back to.",

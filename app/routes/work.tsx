@@ -5,10 +5,10 @@ import { experience } from "../data/experience";
 
 export function meta() {
   return [
-    { title: "Work — Haseeb Arshad" },
+    { title: "Work · Haseeb Arshad" },
     {
       name: "description",
-      content: "Selected projects — AI, agentic systems, and full-stack craft.",
+      content: "Selected projects: AI, agentic systems, and full-stack craft.",
     },
   ];
 }
@@ -153,7 +153,7 @@ function ProjectCard({ p }: { p: Project }) {
           <div className="w-[360px] rounded-xl overflow-hidden shadow-2xl border border-gray-800 bg-black">
             <img
               src={p.popup.image}
-              alt={`${p.name} — preview`}
+              alt={`${p.name} preview`}
               loading="lazy"
               className="w-full h-auto block"
             />

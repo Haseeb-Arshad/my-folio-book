@@ -1,7 +1,7 @@
 import { BlurIn } from "../components/header";
 
 export function meta() {
-  return [{ title: "Connect — Haseeb Arshad" }];
+  return [{ title: "Connect · Haseeb Arshad" }];
 }
 
 export default function Connect() {
@@ -53,7 +53,7 @@ export default function Connect() {
             }}
           >
             I build with pure dedication and follow my curiosity wherever it
-            leads — diving deep into problems until I understand them
+            leads, diving deep into problems until I understand them
             completely. That relentless drive to learn is what shapes
             everything I create.
           </p>
@@ -66,7 +66,7 @@ export default function Connect() {
           >
             Crafting software that genuinely delights users is my thing.
             Whether it&apos;s a clean interface, a resilient backend, or an
-            intelligent agent — I care about the details that make the
+            intelligent agent, I care about the details that make the
             difference.
           </p>
           <p

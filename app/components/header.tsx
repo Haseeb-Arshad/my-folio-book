@@ -22,12 +22,13 @@ function BlurIn({
 /* ─── Logo ─── */
 function LogoIcon() {
   return (
-    <Link to="/">
+    <Link to="/" aria-label="Haseeb Arshad, home">
       <svg
         width="24"
         height="28"
         viewBox="0 0 24 28"
         fill="none"
+        aria-hidden="true"
         className="text-gray-800 hover:text-gray-600 transition-colors"
       >
         <rect x="0" y="0" width="3" height="28" rx="1.5" fill="currentColor" />
@@ -54,6 +55,8 @@ function AnalogClock({ onBook }: { onBook: () => void }) {
     return () => clearInterval(id);
   }, []);
 
+  /* everything below derives from the single `time` read, so the hands,
+     the date, and the digital readout can never disagree */
   const s = time.getSeconds();
   const m = time.getMinutes();
   const h = time.getHours() % 12;
@@ -61,30 +64,27 @@ function AnalogClock({ onBook }: { onBook: () => void }) {
   const mDeg = m * 6 + s * 0.1;
   const hDeg = h * 30 + m * 0.5;
 
-  const now = new Date();
-  const month = now.toLocaleString("en-US", {
-    month: "short",
-    timeZone: "Asia/Karachi",
-  });
-  const day = parseInt(
-    now.toLocaleString("en-US", { day: "numeric", timeZone: "Asia/Karachi" })
-  );
-  const timeStr = now.toLocaleString("en-US", {
+  const month = time.toLocaleString("en-US", { month: "short" });
+  const day = time.getDate();
+  const timeStr = time.toLocaleString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
-    timeZone: "Asia/Karachi",
   });
   const [tp, ampm] = timeStr.split(" ");
 
   return (
     <div className="flex flex-col items-center gap-3 py-2">
       <div className="flex items-center gap-2 text-sm">
-        <span className="text-gray-400">{month}</span>
-        <span className="text-gray-900 font-semibold">{day}</span>
+        <span className="text-gray-500">{month}</span>
+        <span className="text-gray-900 font-medium">{day}</span>
       </div>
 
-      <div className="relative w-[100px] h-[100px]">
+      <div
+        className="relative w-[100px] h-[100px]"
+        role="img"
+        aria-label={`Current time in Pakistan: ${timeStr}`}
+      >
         <div className="absolute inset-0 rounded-full border-[1.5px] border-gray-200" />
         {[...Array(12)].map((_, i) => {
           const angle = (i * 30 * Math.PI) / 180;
@@ -143,14 +143,14 @@ function AnalogClock({ onBook }: { onBook: () => void }) {
         <div className="text-xl font-light tracking-[0.15em] text-gray-900">
           {tp}
         </div>
-        <div className="text-[10px] text-gray-400 tracking-wider uppercase">
+        <div className="text-[10px] text-gray-500 tracking-wider uppercase">
           {ampm}
         </div>
       </div>
 
       <button
         onClick={onBook}
-        className="press text-[11px] text-gray-400 hover:text-gray-900 transition-colors mt-1 underline underline-offset-2"
+        className="press text-[11px] text-gray-500 hover:text-gray-900 transition-colors mt-1 underline underline-offset-2"
       >
         Book a meeting
       </button>
@@ -162,14 +162,9 @@ function AnalogClock({ onBook }: { onBook: () => void }) {
 function DateBadge() {
   const [open, setOpen] = useState(false);
 
-  const now = new Date();
-  const month = now.toLocaleString("en-US", {
-    month: "short",
-    timeZone: "Asia/Karachi",
-  });
-  const day = parseInt(
-    now.toLocaleString("en-US", { day: "numeric", timeZone: "Asia/Karachi" })
-  );
+  const now = pktDate();
+  const month = now.toLocaleString("en-US", { month: "short" });
+  const day = now.getDate();
 
   const handleBook = () => {
     window.open("https://calendly.com/haseebarshad/30min", "_blank");
@@ -195,7 +190,10 @@ function DateBadge() {
     <div className="relative z-50">
       <button
         onClick={() => setOpen(!open)}
-        className="relative z-50 flex items-center gap-1.5 text-gray-400 text-sm tracking-wide hover:text-gray-600 transition-colors"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-label={`Today is ${month} ${day}. Show clock and booking options`}
+        className="relative z-50 flex items-center gap-1.5 text-gray-500 text-sm tracking-wide hover:text-gray-700 transition-colors"
       >
         <span>{month}</span>
         <span className="text-gray-800 font-medium">{day}</span>
@@ -206,6 +204,7 @@ function DateBadge() {
           fill="none"
           stroke="currentColor"
           strokeWidth="2.5"
+          aria-hidden="true"
           className={`transition-transform duration-300 ${open ? "rotate-90" : "-rotate-45"}`}
         >
           <path d="M5 12h14M12 5l7 7-7 7" />
@@ -220,7 +219,11 @@ function DateBadge() {
             onClick={() => setOpen(false)}
           />
           {/* Clock panel — above backdrop, fully interactive */}
-          <div className="absolute top-full right-0 mt-3 z-50 animate-expand-in">
+          <div
+            role="dialog"
+            aria-label="Local time and booking"
+            className="absolute top-full right-0 mt-3 z-50 animate-expand-in"
+          >
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-5 min-w-[200px]">
               <AnalogClock onBook={handleBook} />
             </div>
@@ -247,7 +250,12 @@ function Nav() {
     { label: "Now", to: "/now" },
   ];
 
-  const activeIdx = items.findIndex((item) => location.pathname === item.to);
+  /* prefix match so nested routes (e.g. /blog/some-post) keep their tab lit */
+  const activeIdx = items.findIndex(
+    (item) =>
+      location.pathname === item.to ||
+      location.pathname.startsWith(`${item.to}/`)
+  );
 
   const measureTab = (idx: number) => {
     const nav = navRef.current;
@@ -279,6 +287,26 @@ function Nav() {
         : "opacity 0.35s ease",
     });
     if (!hasMounted.current) hasMounted.current = true;
+  }, [activeIdx]);
+
+  /* re-measure when the window resizes or the web font finishes loading —
+     both change tab widths and would otherwise leave the pill misaligned */
+  useEffect(() => {
+    if (activeIdx < 0) return;
+    let cancelled = false;
+
+    const snapToActive = () => {
+      const pos = measureTab(activeIdx);
+      if (!pos || cancelled) return;
+      setPillStyle((s) => ({ ...s, ...pos, transition: "none" }));
+    };
+
+    window.addEventListener("resize", snapToActive);
+    document.fonts?.ready.then(snapToActive);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("resize", snapToActive);
+    };
   }, [activeIdx]);
 
   /* hover → slide pill to hovered tab */
@@ -317,6 +345,7 @@ function Nav() {
   return (
     <nav
       ref={navRef}
+      aria-label="Primary"
       className="relative flex gap-0.5 pt-4 pb-16"
       onMouseLeave={handleLeave}
     >
@@ -333,8 +362,10 @@ function Nav() {
             key={item.to}
             to={item.to}
             data-nav=""
+            aria-current={isActive ? "page" : undefined}
             onMouseEnter={() => handleHover(i)}
-            className={`relative z-10 px-4 py-1.5 text-[0.95rem] transition-colors duration-300 ${
+            onFocus={() => handleHover(i)}
+            className={`relative z-10 px-4 py-1.5 text-[0.95rem] transition-colors duration-300 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 ${
               isActive
                 ? "text-gray-900 font-medium"
                 : "text-gray-500 hover:text-gray-700"

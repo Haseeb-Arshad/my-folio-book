@@ -1,7 +1,7 @@
 import { BlurIn } from "../components/header";
 
 export function meta() {
-  return [{ title: "Photos — Haseeb Arshad" }];
+  return [{ title: "Photos · Haseeb Arshad" }];
 }
 
 export default function Photos() {

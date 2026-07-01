@@ -107,7 +107,7 @@ const MODE_ORDER: FieldMode[] = ["curvature", "wavefront", "geodesic"];
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Physics Field Atlas - Haseeb Arshad" },
+    { title: "Physics Field Atlas · Haseeb Arshad" },
     {
       name: "description",
       content:
