@@ -187,7 +187,7 @@ export default function Work() {
 
       {experience.map((job, i) => (
         <BlurIn key={job.org} delay={120 + i * 90}>
-          <div className="rounded-2xl border border-gray-100 p-6 mb-12">
+          <div className="rounded-2xl border border-gray-100 p-6 mb-3">
             <div className="flex items-baseline justify-between gap-3 flex-wrap">
               <h4 className="text-gray-900 font-semibold text-[15px]">
                 {job.role}
@@ -227,7 +227,7 @@ export default function Work() {
 
       {/* ─── Projects ─── */}
       <BlurIn delay={200}>
-        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mt-12 mb-4">
           Projects
         </h3>
       </BlurIn>
