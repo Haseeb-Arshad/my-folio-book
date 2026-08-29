@@ -52,6 +52,13 @@ body {
   scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
 }
 
+.agent-prompt-scroll {
+  scrollbar-width: none;
+}
+.agent-prompt-scroll::-webkit-scrollbar {
+  display: none;
+}
+
 ::selection {
   @apply bg-gray-900 text-white;
 }
@@ -155,6 +162,43 @@ body {
   animation: dataShimmer 1.4s ease-in-out infinite;
 }
 
+/* ── Agent page motion ── */
+@keyframes agentMessageIn {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-agent-message {
+  animation: agentMessageIn 0.42s var(--ease-out) both;
+}
+
+@keyframes agentDot {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateY(-3px);
+  }
+}
+
+.animate-agent-dot {
+  animation: agentDot 1.1s ease-in-out infinite;
+}
+
+.agent-noise {
+  background-image: radial-gradient(rgba(61, 52, 43, 0.05) 0.6px, transparent 0.6px);
+  background-size: 7px 7px;
+}
+
 /* ── Reduced motion: keep comprehension cues, drop the movement ── */
 @media (prefers-reduced-motion: reduce) {
   html,
@@ -171,6 +215,10 @@ body {
   .animate-data-shimmer {
     animation: none;
     opacity: 0.5;
+  }
+  .animate-agent-message,
+  .animate-agent-dot {
+    animation: none;
   }
   .press:active {
     transform: none;

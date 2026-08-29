@@ -7,5 +7,8 @@ export default [
   // route("photos", "routes/photos.tsx"),
   route("connect", "routes/connect.tsx"),
   route("now", "routes/now.tsx"),
+  route("agent", "routes/agent.tsx"),
+  route("resume", "routes/resume.ts"),
+  route("api/chat", "routes/api.chat.ts"),
   route("playground", "routes/playground.tsx"),
 ] satisfies RouteConfig;
