@@ -260,34 +260,3 @@ export const resumeProfile = {
     "FAST-NUCES 2019 Artificial Intelligence workshop",
   ],
 } as const;
-
-export const resumeContext = [
-  `Name: ${resumeProfile.name}`,
-  `Headline: ${resumeProfile.headline}`,
-  `Contact: ${resumeProfile.contact.phone}; ${resumeProfile.contact.email}; ${resumeProfile.contact.website}; github.com/${resumeProfile.contact.github}`,
-  `Summary: ${resumeProfile.summary}`,
-  "",
-  "Work experience:",
-  ...resumeProfile.experience.flatMap((job) => [
-    `${job.company} — ${job.role} (${job.dates}; ${job.location})`,
-    ...job.bullets.map((bullet) => `- ${bullet}`),
-    `Technologies: ${job.technologies.join(", ")}`,
-  ]),
-  "",
-  "Project experience:",
-  ...resumeProfile.projects.flatMap((project) => [
-    `${project.name} — ${project.description}`,
-    ...project.bullets.map((bullet) => `- ${bullet}`),
-  ]),
-  "",
-  "Skills & expertise:",
-  `AI & Agentic Systems: ${resumeProfile.skills.aiAndAgentic.join(", ")}`,
-  `Backend & Platform Engineering: ${resumeProfile.skills.backendAndPlatform.join(", ")}`,
-  `Data, Search & Storage: ${resumeProfile.skills.dataSearchStorage.join(", ")}`,
-  `Frontend Engineering: ${resumeProfile.skills.frontend.join(", ")}`,
-  `Cloud & DevOps: ${resumeProfile.skills.cloudAndDevOps.join(", ")}`,
-  `Engineering Practices: ${resumeProfile.skills.practices.join(", ")}`,
-  "",
-  `Education: ${resumeProfile.education}`,
-  `Certifications and additional learning: ${resumeProfile.certifications.join("; ")}`,
-].join("\n");

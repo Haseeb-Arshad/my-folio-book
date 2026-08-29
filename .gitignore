@@ -7,3 +7,5 @@
 # React Router
 /.react-router/
 /build/
+/\.playwright-cli/
+/output/playwright/

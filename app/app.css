@@ -178,6 +178,42 @@ body {
   animation: agentMessageIn 0.42s var(--ease-out) both;
 }
 
+@keyframes agentLineRise {
+  0% {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+
+.agent-message-line {
+  display: block;
+  animation: agentLineRise 0.46s var(--ease-out) both;
+  will-change: opacity, filter, transform;
+}
+
+@keyframes agentPop {
+  0% {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(-4px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-agent-pop {
+  animation: agentPop 0.24s var(--ease-out) both;
+}
+
 @keyframes agentDot {
   0%,
   100% {
@@ -217,6 +253,8 @@ body {
     opacity: 0.5;
   }
   .animate-agent-message,
+  .agent-message-line,
+  .animate-agent-pop,
   .animate-agent-dot {
     animation: none;
   }
