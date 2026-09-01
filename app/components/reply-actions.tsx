@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { projects } from "../data/projects";
 import { resumeProfile } from "../data/resume";
+
+/* The matching table, handed down from the route loader so it reflects
+   whatever is in Supabase rather than a second, drifting copy. */
+export type ProjectLink = {
+  name: string;
+  href: string;
+  live: boolean;
+};
 
 /* ───────────────────────────────────────────────────────────
    Turns a finished reply into something you can act on.
@@ -56,7 +63,10 @@ function mentions(haystack: string, needle: string) {
   return new RegExp(`(^|[^a-z0-9])${escaped}([^a-z0-9]|$)`, "i").test(haystack);
 }
 
-export function replyActions(text: string): ReplyAction[] {
+export function replyActions(
+  text: string,
+  projects: readonly ProjectLink[]
+): ReplyAction[] {
   const actions: ReplyAction[] = [];
   const seen = new Set<string>();
 
@@ -84,7 +94,7 @@ export function replyActions(text: string): ReplyAction[] {
       kind: "link",
       key: `project:${project.name}`,
       label: project.live ? `Open ${shown}` : `${shown} on GitHub`,
-      href: project.live ?? project.code,
+      href: project.href,
       external: true,
     });
   }

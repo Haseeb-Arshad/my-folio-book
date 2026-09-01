@@ -3,6 +3,7 @@ import {
   buildConversationPrompt,
   type ConversationMessage,
 } from "../agent/prompt.server";
+import { getLiveNotes } from "../data/content.server";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "openai/gpt-4.1-mini";
@@ -344,6 +345,11 @@ export async function action({ request }: ActionFunctionArgs) {
     );
   }
 
+  /* Fast-changing facts from Supabase. Resolves to [] when the table is
+     unreachable or unconfigured, in which case the agent simply answers from
+     the published notes. */
+  const liveNotes = await getLiveNotes();
+
   const upstreamController = new AbortController();
   const timeout = setTimeout(() => upstreamController.abort(), REQUEST_TIMEOUT_MS);
 
@@ -362,7 +368,7 @@ export async function action({ request }: ActionFunctionArgs) {
         messages: [
           {
             role: "system",
-            content: buildConversationPrompt(messages, [], { goblin }),
+            content: buildConversationPrompt(messages, liveNotes, { goblin }),
           },
           ...messages,
         ],

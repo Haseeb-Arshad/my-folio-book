@@ -1,5 +1,11 @@
+import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
-import { favorites, posts } from "../data/blogs";
+import { getBlogs, getPosts } from "../data/content.server";
+
+export async function loader() {
+  const [favorites, posts] = await Promise.all([getBlogs(), getPosts()]);
+  return { favorites, posts };
+}
 
 export function meta() {
   return [
@@ -29,6 +35,8 @@ function ArrowOut() {
 }
 
 export default function Blog() {
+  const { favorites, posts } = useLoaderData<typeof loader>();
+
   return (
     <section className="pb-24">
       <BlurIn>

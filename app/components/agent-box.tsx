@@ -7,7 +7,11 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { ReplyActions, replyActions } from "./reply-actions";
+import {
+  ReplyActions,
+  replyActions,
+  type ProjectLink,
+} from "./reply-actions";
 
 /* ───────────────────────────────────────────────────────────
    A single search box that unfolds into a conversation.
@@ -278,14 +282,16 @@ function MessageText({
 function Bubble({
   message,
   showActions,
+  projectLinks,
 }: {
   message: Message;
   showActions: boolean;
+  projectLinks: readonly ProjectLink[];
 }) {
   const isAssistant = message.role === "assistant";
   const actions = useMemo(
-    () => (showActions ? replyActions(message.text) : []),
-    [showActions, message.text]
+    () => (showActions ? replyActions(message.text, projectLinks) : []),
+    [showActions, message.text, projectLinks]
   );
 
   return (
@@ -337,7 +343,13 @@ function ThinkingBubble() {
   );
 }
 
-export default function AgentBox({ config }: { config: AgentBoxConfig }) {
+export default function AgentBox({
+  config,
+  projectLinks = [],
+}: {
+  config: AgentBoxConfig;
+  projectLinks?: readonly ProjectLink[];
+}) {
   const { inputId, heading, welcome, goblinWelcome, placeholder, prompts } =
     config;
 
@@ -606,6 +618,7 @@ export default function AgentBox({ config }: { config: AgentBoxConfig }) {
                 <Bubble
                   key={message.id}
                   message={message}
+                  projectLinks={projectLinks}
                   showActions={
                     message.role === "assistant" && message.id !== streamingId
                   }
