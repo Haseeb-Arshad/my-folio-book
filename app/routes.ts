@@ -8,7 +8,7 @@ export default [
   route("connect", "routes/connect.tsx"),
   route("now", "routes/now.tsx"),
   route("agent", "routes/agent.tsx"),
-  route("resume", "routes/resume.ts"),
+  route("resume", "routes/resume.tsx"),
   route("api/chat", "routes/api.chat.ts"),
   route("playground", "routes/playground.tsx"),
 ] satisfies RouteConfig;

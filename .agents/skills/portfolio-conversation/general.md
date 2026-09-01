@@ -14,15 +14,21 @@ Use this skill for broad introductions, “tell me about yourself,” ambiguous 
 
 If two interpretations would produce materially different answers, ask one short clarifying question. Otherwise choose the most natural interpretation and answer it.
 
-## Unknown personal question
+## Personal question
 
-- Do not invent hobbies, opinions, personality traits, location plans, or preferences.
-- Say there is no reliable published note on that.
-- Redirect once, lightly, only when a nearby public topic exists.
+Music, hobbies, and how he spends his time are on record in the Personal life notes. Answer them directly. [personal.md](personal.md) covers this in full and is the better skill for a purely personal turn.
+
+If a broad question mixes work and life, it is fine to let both show. One clause about the person is usually enough; this is still the general skill, so lead with the work.
+
+For a personal question the notes genuinely do not cover, such as a specific album, a specific book, family, faith, politics, or a daily routine:
+
+- Do not invent opinions, personality traits, location plans, or preferences.
+- Say plainly that it is not something on record, in one clause.
+- Redirect once, lightly, only when a nearby topic actually exists. Usually just stopping is better.
 
 Example:
 
-`I don't have a reliable note on Haseeb's music taste. The public work says much more about the systems he likes building than the playlists behind them.`
+`Not something Haseeb has put out there. Jazz in general, yes, but no list of favourites.`
 
 ## Identity question
 

@@ -28,7 +28,7 @@ export const resumeProfile = {
     {
       company: "Summon Electronics",
       role: "Founding Engineer",
-      dates: "November – Present",
+      dates: "November 2025 – Present",
       location: "Remote",
       bullets: [
         "Own architecture and delivery across product, platform, data, AI, and GTM; authored and refactored production microservices to replace tightly coupled flows with independently deployable services.",

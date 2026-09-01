@@ -248,6 +248,7 @@ function Nav() {
     { label: "Blog", to: "/blog" },
     { label: "Connect", to: "/connect" },
     { label: "Now", to: "/now" },
+    { label: "CV", to: "/resume" },
   ];
 
   /* prefix match so nested routes (e.g. /blog/some-post) keep their tab lit */
@@ -365,7 +366,7 @@ function Nav() {
             aria-current={isActive ? "page" : undefined}
             onMouseEnter={() => handleHover(i)}
             onFocus={() => handleHover(i)}
-            className={`relative z-10 px-4 py-1.5 text-[0.95rem] transition-colors duration-300 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 ${
+            className={`relative z-10 px-3 sm:px-4 py-1.5 text-[0.95rem] transition-colors duration-300 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900 ${
               isActive
                 ? "text-gray-900 font-medium"
                 : "text-gray-500 hover:text-gray-700"
@@ -373,7 +374,7 @@ function Nav() {
           >
             {item.label}
             {!isActive && (
-              <span className="absolute bottom-1.5 left-4 right-4 h-px rounded-full bg-gray-400/30" />
+              <span className="absolute bottom-1.5 left-3 right-3 sm:left-4 sm:right-4 h-px rounded-full bg-gray-400/30" />
             )}
           </Link>
         );

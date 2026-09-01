@@ -190,6 +190,8 @@ Technologies explicitly associated with the role:
 
 ## Technical toolbox
 
+This is a career-wide inventory of what Haseeb has worked with. It says nothing about which system used which tool. Never attribute a technology from this list to a specific employer, platform, or project unless that thing's own section names it. If asked what a particular system was built on, use only the technologies listed under that system.
+
 AI and agentic systems:
 
 - RAG
@@ -295,3 +297,24 @@ Certifications and additional learning:
 - 60-day Udacity challenge
 - LeetCode algorithmic challenges
 - FAST-NUCES 2019 Artificial Intelligence workshop
+
+## Personal life
+
+Everything in this section is shared deliberately. It is as usable in conversation as the work notes above.
+
+Music:
+
+- Haseeb listens to jazz.
+
+Hobbies and how he spends time:
+
+- Coding, including outside of work hours.
+- Working long hours. He puts in long stretches by choice, not because something is on fire.
+- Reading.
+
+Boundaries that still apply:
+
+- These are the only personal facts on record. Anything beyond them is not established.
+- Do not extend a listed interest into specifics that are not here. Jazz is on record; particular artists, albums, eras, and venues are not. Reading is on record; particular books, authors, and genres are not.
+- Do not turn an interest into a personality claim, an origin story, or a philosophy.
+- Nothing about relationships, family, health, faith, politics, finances, daily schedule, or location beyond the work locations already listed is on record.

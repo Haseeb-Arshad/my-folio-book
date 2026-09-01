@@ -32,6 +32,17 @@ const topicCases = [
   ["How can I reach you?", "contact"],
   ["Where did you study?", "education"],
   ["Tell me about yourself.", "general"],
+  ["What music do you listen to?", "personal"],
+  ["Do you have any hobbies?", "personal"],
+  ["What do you do outside of work?", "personal"],
+  ["Do you read much?", "personal"],
+  // The weak personal words must lose to a technical sentence, or a question
+  // about the parts platform would be answered with only the hobby notes.
+  ["How does the parts database read millions of records?", "technical-fit"],
+  // A named project must beat the contact keywords, or the turn arrives with
+  // only the contact block and the project gets invented from its name.
+  ["Tell me about Oriexa and how I can reach you.", "projects"],
+  ["Where did you work before Summon, and how do I email you?", "experience"],
 ];
 
 for (const [question, expectedTopic] of topicCases) {
@@ -69,8 +80,53 @@ assert.match(contactPrompt, /# Contact skill/);
 assert.match(contactPrompt, /Haseebarshad992@gmail\.com/);
 assert.doesNotMatch(contactPrompt, /## Technical toolbox/);
 
+// The compound question must carry both the project notes and the contact
+// details, so neither half of the answer has to be improvised.
+const compoundPrompt = buildConversationPrompt(
+  message("Tell me about Oriexa and how I can reach you.")
+);
+assert.match(compoundPrompt, /## Project: Oriexa/);
+assert.match(compoundPrompt, /Haseebarshad992@gmail\.com/);
+
 const chronologyPrompt = buildConversationPrompt(message("Where did you work before Summon?"));
 assert.match(chronologyPrompt, /## Work: Summon Electronics/);
 assert.match(chronologyPrompt, /## Work: REMAP AI/);
 
-console.log(`Verified ${topicCases.length + 6} conversation routing and prompt checks.`);
+const personalPrompt = buildConversationPrompt(message("What music do you listen to?"));
+assert.match(personalPrompt, /# Personal skill/);
+assert.match(personalPrompt, /## Personal life/);
+assert.match(personalPrompt, /Haseeb listens to jazz/);
+// A music question should not drag the whole employment history into context.
+assert.doesNotMatch(personalPrompt, /## Work: Summon Electronics/);
+
+// Live notes are absent unless the caller supplies them.
+assert.doesNotMatch(personalPrompt, /# Live notes supplied for this turn/);
+
+const livePrompt = buildConversationPrompt(message("What are you reading?"), [
+  { label: "Currently reading", value: "Designing Data-Intensive Applications" },
+  { label: "  Spaced  label ", value: "  collapsed   whitespace  " },
+  { label: "Too long", value: "x".repeat(241) },
+  { label: "", value: "dropped for having no label" },
+]);
+assert.match(livePrompt, /# Live notes supplied for this turn/);
+assert.match(livePrompt, /- Currently reading: Designing Data-Intensive Applications/);
+assert.match(livePrompt, /- Spaced label: collapsed whitespace/);
+assert.doesNotMatch(livePrompt, /x{241}/, "An over-length live note should be dropped.");
+assert.doesNotMatch(livePrompt, /dropped for having no label/);
+
+// Goblin mode is opt-in and must not leak into a default turn.
+const plainPrompt = buildConversationPrompt(message("What do you do?"));
+assert.doesNotMatch(plainPrompt, /# Goblin mode/);
+assert.doesNotMatch(plainPrompt, /Voice override active for this turn/);
+
+const goblinPrompt = buildConversationPrompt(message("What do you do?"), [], {
+  goblin: true,
+});
+assert.match(goblinPrompt, /Voice override active for this turn/);
+assert.match(goblinPrompt, /# Goblin mode/);
+// The costume must not strip the grounding.
+assert.match(goblinPrompt, /supplied public notes are the only authority/);
+assert.match(goblinPrompt, /Do not use em dashes or en dashes/);
+assert.match(goblinPrompt, /## Snapshot/);
+
+console.log(`Verified ${topicCases.length + 24} conversation routing and prompt checks.`);

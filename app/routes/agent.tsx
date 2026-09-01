@@ -64,6 +64,11 @@ const prompts: Prompt[] = [
     value: "Walk me through one of your projects.",
     icon: PlugsConnected,
   },
+  {
+    label: "What do you do outside work?",
+    value: "What do you do when you're not working?",
+    icon: Sparkle,
+  },
 ];
 
 function makeMessage(role: Message["role"], text: string): Message {

@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Link } from "react-router";
 import type { Route } from "./+types/home";
 import { Nav, BlurIn } from "../components/header";
+import AgentBox, { generalAgent } from "../components/agent-box";
 import { favorites } from "../data/blogs";
 
 export function meta({}: Route.MetaArgs) {
@@ -198,6 +199,10 @@ export default function Home() {
 
       <BlurIn delay={460}>
         <SelectedReading />
+      </BlurIn>
+
+      <BlurIn delay={580}>
+        <AgentBox config={generalAgent} />
       </BlurIn>
     </>
   );

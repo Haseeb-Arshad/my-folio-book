@@ -255,10 +255,75 @@ body {
   .animate-agent-message,
   .agent-message-line,
   .animate-agent-pop,
-  .animate-agent-dot {
+  .animate-agent-dot,
+  .agent-word,
+  .agent-bubble-in,
+  .agent-chip-in {
     animation: none;
+  }
+  .agent-panel {
+    transition: none;
   }
   .press:active {
     transform: none;
   }
+}
+
+/* ── Résumé agent ─────────────────────────────────────────────
+   Word-level reveal. Every word animates as it mounts, so a
+   streamed reply staggers itself in real time; a reply that
+   arrives whole gets an index-based stagger instead (see
+   `initialWords` in components/resume-agent.tsx).
+   ─────────────────────────────────────────────────────────── */
+@keyframes agentWordIn {
+  0% {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(7px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0);
+  }
+}
+.agent-word {
+  display: inline-block;
+  animation: agentWordIn 0.52s var(--ease-out) backwards;
+}
+
+@keyframes agentBubbleIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.agent-bubble-in {
+  animation: agentBubbleIn 0.5s var(--ease-out) backwards;
+}
+
+/* Action chips under a finished reply. Same entrance, its own class so the
+   bubble selector stays meaning "bubble". */
+.agent-chip-in {
+  animation: agentBubbleIn 0.4s var(--ease-out) backwards;
+}
+
+/* Height transition without measuring: 0fr → 1fr on a grid row.
+   The panel stays mounted so the browser has a 0fr frame to
+   transition *from* on the first open. */
+.agent-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 0.55s var(--ease-out),
+    opacity 0.4s ease;
+}
+.agent-panel[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
 }
