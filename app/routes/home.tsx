@@ -1,9 +1,17 @@
 import { useState, useRef } from "react";
-import { Link } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import type { Route } from "./+types/home";
 import { Nav, BlurIn } from "../components/header";
 import AgentBox, { generalAgent } from "../components/agent-box";
-import { favorites } from "../data/blogs";
+import { getBlogs, projectLinksFrom } from "../data/content.server";
+
+export async function loader() {
+  const [favorites, projectLinks] = await Promise.all([
+    getBlogs(),
+    projectLinksFrom(),
+  ]);
+  return { favorites, projectLinks };
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -95,7 +103,11 @@ function CompanyLink() {
 }
 
 /* ─── Selected Reading (home preview of favorite blogs) ─── */
-function SelectedReading() {
+function SelectedReading({
+  favorites,
+}: {
+  favorites: { title: string; author: string; url: string; note: string; featured?: boolean }[];
+}) {
   const featured = favorites.filter((b) => b.featured).slice(0, 3);
 
   return (
@@ -164,6 +176,8 @@ function SelectedReading() {
 }
 
 export default function Home() {
+  const { favorites, projectLinks } = useLoaderData<typeof loader>();
+
   return (
     <>
       <BlurIn delay={100}>
@@ -198,11 +212,11 @@ export default function Home() {
       </BlurIn>
 
       <BlurIn delay={460}>
-        <SelectedReading />
+        <SelectedReading favorites={favorites} />
       </BlurIn>
 
       <BlurIn delay={580}>
-        <AgentBox config={generalAgent} />
+        <AgentBox config={generalAgent} projectLinks={projectLinks} />
       </BlurIn>
     </>
   );

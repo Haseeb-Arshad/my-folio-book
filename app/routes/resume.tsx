@@ -1,7 +1,16 @@
+import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import AgentBox, { cvAgent } from "../components/agent-box";
-import { favorites } from "../data/blogs";
+import { getBlogs, projectLinksFrom } from "../data/content.server";
 import { resumeProfile } from "../data/resume";
+
+export async function loader() {
+  const [favorites, projectLinks] = await Promise.all([
+    getBlogs(),
+    projectLinksFrom(),
+  ]);
+  return { favorites, projectLinks };
+}
 
 export function meta() {
   return [
@@ -106,7 +115,11 @@ function ViewerFallback() {
 }
 
 /* ─── Reading list ─── */
-function Reading() {
+function Reading({
+  favorites,
+}: {
+  favorites: { title: string; author: string; url: string; note: string }[];
+}) {
   return (
     <section className="pb-16">
       <BlurIn>
@@ -161,6 +174,8 @@ function Reading() {
 }
 
 export default function Resume() {
+  const { favorites, projectLinks } = useLoaderData<typeof loader>();
+
   return (
     <>
       <BlurIn>
@@ -201,9 +216,9 @@ export default function Resume() {
         </div>
       </BlurIn>
 
-      <Reading />
+      <Reading favorites={favorites} />
 
-      <AgentBox config={cvAgent} />
+      <AgentBox config={cvAgent} projectLinks={projectLinks} />
     </>
   );
 }

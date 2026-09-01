@@ -1,7 +1,16 @@
 import { useState, useRef } from "react";
+import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
-import { projects, type Project } from "../data/projects";
-import { experience } from "../data/experience";
+import { type Project } from "../data/projects";
+import { getProjects, getExperience } from "../data/content.server";
+
+export async function loader() {
+  const [projects, experience] = await Promise.all([
+    getProjects(),
+    getExperience(),
+  ]);
+  return { projects, experience };
+}
 
 export function meta() {
   return [
@@ -72,12 +81,10 @@ function ProjectCard({ p }: { p: Project }) {
       onMouseEnter={hasPreview ? handleEnter : undefined}
       onMouseLeave={hasPreview ? handleLeave : undefined}
     >
-      <a
-        href={primary}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="group block rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1"
-      >
+      {/* Not an anchor. The title below carries the link and stretches an
+          overlay across the whole card, which keeps the card clickable
+          without nesting anchors inside it. */}
+      <div className="group relative rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1">
         <div className="flex items-start gap-4">
           {p.logo ? (
             <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
@@ -99,7 +106,14 @@ function ProjectCard({ p }: { p: Project }) {
             <div className="flex items-baseline justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
                 <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
-                  {p.name}
+                  <a
+                    href={primary}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+                  >
+                    {p.name}
+                  </a>
                 </h3>
                 {p.status === "building" && (
                   <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
@@ -128,7 +142,7 @@ function ProjectCard({ p }: { p: Project }) {
               ))}
             </div>
 
-            <div className="flex flex-wrap items-center gap-4 mt-4">
+            <div className="relative z-10 flex flex-wrap items-center gap-4 mt-4">
               {p.live && <ProjectLink href={p.live} label="Live" external />}
               {p.links ? (
                 p.links.map((l) => (
@@ -145,7 +159,7 @@ function ProjectCard({ p }: { p: Project }) {
             </div>
           </div>
         </div>
-      </a>
+      </div>
 
       {/* hover preview — image + blurb from the live site */}
       {hasPreview && showPreview && p.popup && (
@@ -168,6 +182,8 @@ function ProjectCard({ p }: { p: Project }) {
 }
 
 export default function Work() {
+  const { projects, experience } = useLoaderData<typeof loader>();
+
   return (
     <section className="pb-24">
       <BlurIn>
