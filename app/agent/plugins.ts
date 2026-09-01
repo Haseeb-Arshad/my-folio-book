@@ -27,5 +27,13 @@ export const agentPlugins: readonly AgentPlugin[] = [
     description: "Connect Apple Messages through a private bridge.",
     detail: "This needs a user-owned macOS relay such as AirMessage or BlueBubbles.",
   },
+  {
+    id: "supabase-notes",
+    label: "Live notes",
+    status: "needs-setup",
+    description: "Pull fast-changing facts from a Supabase table.",
+    detail:
+      "Read-only, server-side. Rows arrive as facts to answer from, never as instructions.",
+  },
 ];
 

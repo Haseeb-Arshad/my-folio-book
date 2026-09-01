@@ -10,6 +10,9 @@ const MAX_MESSAGES = 6;
 const MAX_MESSAGE_LENGTH = 1600;
 const MAX_BODY_LENGTH = 18_000;
 const MAX_OUTPUT_TOKENS = 280;
+/* Goblin mode builds before it punctures, so it needs more room than the
+   default voice or it gets cut off mid-sentence. */
+const MAX_GOBLIN_OUTPUT_TOKENS = 460;
 const MAX_OUTPUT_CHARACTERS = 4000;
 const REQUEST_TIMEOUT_MS = 20_000;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
@@ -108,7 +111,11 @@ function instantConversationReply(messages: ConversationMessage[]) {
 function normalizeAssistantText(text: string) {
   // Keep the visible voice free of typographic dash punctuation. Technical
   // hyphens inside names such as full-stack are intentionally left alone.
-  return text.replace(/\s*[—–]\s*/g, ", ").replace(/,\s*,/g, ",");
+  return text
+    .replace(/\s*[—–]\s*/g, ", ")
+    .replace(/,\s*,/g, ",")
+    // Collapsing the dash can leave a doubled space behind.
+    .replace(/[ \t]{2,}/g, " ");
 }
 
 function textResponse(text: string) {
@@ -315,8 +322,17 @@ export async function action({ request }: ActionFunctionArgs) {
     return jsonResponse({ error: "Write a question first, then send it through." }, 400);
   }
 
-  const instantReply = instantConversationReply(messages);
-  if (instantReply) return textResponse(instantReply);
+  const goblin =
+    typeof payload === "object" &&
+    payload !== null &&
+    (payload as { goblin?: unknown }).goblin === true;
+
+  /* The canned instant replies are written in the default voice, so they would
+     break character. In goblin mode every turn goes to the model. */
+  if (!goblin) {
+    const instantReply = instantConversationReply(messages);
+    if (instantReply) return textResponse(instantReply);
+  }
 
   const apiKey =
     process.env.PORTFOLIO_OPENROUTER_API_KEY ??
@@ -344,12 +360,15 @@ export async function action({ request }: ActionFunctionArgs) {
       body: JSON.stringify({
         model: configuredModel(),
         messages: [
-          { role: "system", content: buildConversationPrompt(messages) },
+          {
+            role: "system",
+            content: buildConversationPrompt(messages, [], { goblin }),
+          },
           ...messages,
         ],
         stream: true,
-        max_tokens: MAX_OUTPUT_TOKENS,
-        temperature: 0.68,
+        max_tokens: goblin ? MAX_GOBLIN_OUTPUT_TOKENS : MAX_OUTPUT_TOKENS,
+        temperature: goblin ? 0.9 : 0.68,
         provider: {
           allow_fallbacks: true,
           data_collection: "deny",
