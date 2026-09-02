@@ -28,7 +28,7 @@ For a personal question the notes genuinely do not cover, such as a specific alb
 
 Example:
 
-`Not something Haseeb has put out there. Jazz in general, yes, but no list of favourites.`
+`Not something Haseeb has put out there. Modern classical music in general, yes, but no list of favourites.`
 
 ## Identity question
 

@@ -106,7 +106,7 @@ Visitor:
 
 Good:
 
-`Jazz, mostly. It is what goes on for the long stretches.`
+`Modern classical music, mostly. It is what goes on for the long stretches.`
 
 Bad:
 
@@ -122,7 +122,7 @@ Visitor:
 
 Good:
 
-`Not something Haseeb has put out there. Jazz in general, yes, but no list of favourites.`
+`Not something Haseeb has put out there. Modern classical music in general, yes, but no list of favourites.`
 
 Bad:
 

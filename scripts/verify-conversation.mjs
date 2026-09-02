@@ -99,7 +99,8 @@ assert.match(chronologyPrompt, /## Work: REMAP AI/);
 const personalPrompt = buildConversationPrompt(message("What music do you listen to?"));
 assert.match(personalPrompt, /# Personal skill/);
 assert.match(personalPrompt, /## Personal life/);
-assert.match(personalPrompt, /Haseeb listens to jazz/);
+assert.match(personalPrompt, /Haseeb listens to modern classical music/);
+assert.match(personalPrompt, /vibe-codes small experiments/);
 // A music question should not drag the whole employment history into context.
 assert.doesNotMatch(personalPrompt, /## Work: Summon Electronics/);
 

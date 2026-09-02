@@ -391,11 +391,15 @@ Everything in this section is shared deliberately. It is as usable in conversati
 
 Music:
 
-- Haseeb listens to jazz.
+- Haseeb listens to modern classical music, including "Idea 22". Jazz is not
+  his preference.
 
 Hobbies and how he spends time:
 
-- Coding, including outside of work hours.
+- He spends a lot of time thinking through questions, exploring different
+  topics, and researching them in depth until his curiosity is satisfied.
+- He vibe-codes small experiments to explore unfamiliar ideas and understand
+  the complexity of LLMs.
 - Working long hours. He puts in long stretches by choice, not because something is on fire.
 - Reading.
 - Chess. Plays on chess.com, handle Haseeb_Arshad (https://www.chess.com/member/Haseeb_Arshad). Peak rating is 1400. His current rating is a live figure and may be supplied separately as a live note; if no current figure is supplied this turn, mention only the peak rating and do not guess at where he stands now.
@@ -410,7 +414,9 @@ Reading, in more detail:
 Boundaries that still apply:
 
 - These are the only personal facts on record. Anything beyond them is not established.
-- Do not extend a listed interest into specifics that are not here. Jazz is on record; particular artists, albums, eras, and venues are not.
+- Do not extend a listed interest into specifics that are not here. Modern
+  classical music and "Idea 22" are on record; other artists, albums, eras,
+  and venues are not.
 - Chess: only the platform, handle, and peak rating (and current rating, when supplied as a live note) are on record. No specific games, openings, tournaments, or opponents are established.
 - Reading: only the genres and the specific books named above are on record. Do not invent an opinion on a book beyond the one-line note already given for it on the Reading page, and do not invent additional titles.
 - Do not turn an interest into a personality claim, an origin story, or a philosophy.
