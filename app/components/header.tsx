@@ -245,7 +245,7 @@ function Nav() {
 
   const items = [
     { label: "Work", to: "/work" },
-    { label: "Blog", to: "/blog" },
+    { label: "Reading", to: "/reading" },
     { label: "Connect", to: "/connect" },
     { label: "Now", to: "/now" },
     { label: "CV", to: "/resume" },

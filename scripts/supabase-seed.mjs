@@ -40,6 +40,7 @@ function slugify(value) {
 const { projects } = await loadModule("app/data/projects.ts");
 const { experience } = await loadModule("app/data/experience.ts");
 const { favorites, posts } = await loadModule("app/data/blogs.ts");
+const { books } = await loadModule("app/data/books.ts");
 
 const client = new pg.Client({
   connectionString: resolveDatabaseUrl(),
@@ -156,6 +157,34 @@ try {
     );
   }
   counts.posts = posts.length;
+
+  // ── books ───────────────────────────────────────────────────
+  for (const [index, book] of books.entries()) {
+    await client.query(
+      `insert into public.books
+         (slug, title, author, isbn13, genres, note, favorite, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7,$8)
+       on conflict (slug) do update set
+         title = excluded.title,
+         author = excluded.author,
+         isbn13 = excluded.isbn13,
+         genres = excluded.genres,
+         note = excluded.note,
+         favorite = excluded.favorite,
+         sort_order = excluded.sort_order`,
+      [
+        slugify(`${book.title} ${book.author}`),
+        book.title,
+        book.author,
+        book.isbn13 ?? null,
+        book.genres,
+        book.note,
+        book.favorite ?? false,
+        index,
+      ]
+    );
+  }
+  counts.books = books.length;
 
   // ── live_notes ──────────────────────────────────────────────
   // Nothing to migrate: this table has no static counterpart. Seed one row so

@@ -7,6 +7,7 @@ import {
   type Blog,
   type Post,
 } from "./blogs";
+import { books as staticBooks, type Book } from "./books";
 import type { LiveNote } from "../agent/prompt.server";
 
 /* ───────────────────────────────────────────────────────────
@@ -168,6 +169,32 @@ export async function getPosts(): Promise<Post[]> {
       }));
     },
     staticPosts
+  );
+}
+
+export async function getBooks(): Promise<Book[]> {
+  return read(
+    "books",
+    async () => {
+      const data = await rows(
+        supabaseServer()!
+          .from("books")
+          .select("*")
+          .eq("published", true)
+          .order("sort_order", { ascending: true })
+      );
+      if (data.length === 0) return staticBooks;
+
+      return data.map((row: Record<string, any>): Book => ({
+        title: row.title,
+        author: row.author,
+        isbn13: row.isbn13 ?? undefined,
+        genres: row.genres ?? [],
+        note: row.note,
+        favorite: row.favorite ?? false,
+      }));
+    },
+    staticBooks
   );
 }
 
