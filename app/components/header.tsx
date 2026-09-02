@@ -19,22 +19,21 @@ function BlurIn({
   );
 }
 
-/* ─── Logo ─── */
+/* ─── Logo ───
+   Hand-drawn HA mark, supplied as a transparent PNG. A raster image can't
+   pick up `currentColor` the way the old SVG bars did, so the hover cue
+   is opacity instead of a color shift. */
 function LogoIcon() {
   return (
-    <Link to="/" aria-label="Haseeb Arshad, home">
-      <svg
-        width="24"
-        height="28"
-        viewBox="0 0 24 28"
-        fill="none"
+    <Link to="/" aria-label="Haseeb Arshad, home" className="press block">
+      <img
+        src="/logo.png"
+        alt=""
         aria-hidden="true"
-        className="text-gray-800 hover:text-gray-600 transition-colors"
-      >
-        <rect x="0" y="0" width="3" height="28" rx="1.5" fill="currentColor" />
-        <rect x="7" y="0" width="3" height="28" rx="1.5" fill="currentColor" />
-        <rect x="14" y="0" width="3" height="18" rx="1.5" fill="currentColor" />
-      </svg>
+        width={480}
+        height={425}
+        className="h-8 w-auto opacity-90 transition-opacity hover:opacity-100"
+      />
     </Link>
   );
 }
