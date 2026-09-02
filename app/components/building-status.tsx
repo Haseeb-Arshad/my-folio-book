@@ -9,25 +9,27 @@ export default function BuildingStatus({
   logo,
 }: BuildingStatusProps) {
   return (
-    <span
-      className="building-status"
-      role="status"
-      aria-label={`${label}, currently in progress`}
-    >
+    <span className="building-status">
       {logo && (
         <span className="building-status__mark" aria-hidden="true">
           <img src={logo} alt="" />
         </span>
       )}
-      <span className="building-status__bars" aria-hidden="true">
-        <span className="building-status__bar" />
-        <span className="building-status__bar" />
-        <span className="building-status__bar" />
-        <span className="building-status__bar" />
-        <span className="building-status__bar" />
-        <span className="building-status__bar" />
+      <span
+        className="building-status__signal"
+        role="status"
+        aria-label={`${label}, currently in progress`}
+      >
+        <span className="building-status__bars" aria-hidden="true">
+          <span className="building-status__bar" />
+          <span className="building-status__bar" />
+          <span className="building-status__bar" />
+          <span className="building-status__bar" />
+          <span className="building-status__bar" />
+          <span className="building-status__bar" />
+        </span>
+        <span className="building-status__label">{label}</span>
       </span>
-      <span className="building-status__label">{label}</span>
     </span>
   );
 }
