@@ -86,11 +86,11 @@ function CompanyLink() {
               </span>
             </div>
             <p className="text-gray-500 text-[13px] leading-relaxed mt-2">
-              Electronics commerce across both consumer and B2B. As a founding
-              engineer I play a central role in building the platform it runs
-              on: RFQ workflows, supplier intelligence, multi-tenant
-              analytics, and AI-assisted automation across React, Node.js,
-              Go, and PostgreSQL.
+              Electronics commerce for consumer and B2B buyers. As a founding
+              engineer, I build the operational layer behind it: turning RFQs
+              into workable next steps, making supplier and buyer context
+              easier to find, and automating the repetitive parts while keeping
+              important decisions visible.
             </p>
             <span className="text-gray-500 text-xs mt-3 block">
               Founding Full-Stack / Principal Engineer
@@ -187,7 +187,12 @@ export default function Home() {
           <h1 className="text-[1.35rem] font-medium text-gray-900 tracking-tight">
             Haseeb Arshad
           </h1>
-          <p className="text-[1.05rem] text-gray-500 mt-1">
+          <p className="text-[1.05rem] text-gray-500 mt-1 max-w-2xl">
+            I&apos;m a builder who enjoys solving ambiguous problems. I work
+            across machine learning systems and software engineering, turning
+            messy business context into useful decisions.
+          </p>
+          <p className="text-[0.95rem] text-gray-500 mt-3">
             Founding Full-Stack &amp; Principal Engineer at <CompanyLink />,
             AI &amp; Agentic Systems
           </p>

@@ -40,33 +40,33 @@ const welcomeMessage: Message = {
 
 const prompts: Prompt[] = [
   {
-    label: "What is happening now?",
-    value: "What are you building right now?",
+    label: "Where's the work headed?",
+    value: "What's taking most of your attention right now?",
     icon: Sparkle,
   },
   {
-    label: "Show me the 1 ms moment",
+    label: "Find the 1 ms culprit",
     value: "Show me the 1 ms moment in your work.",
     icon: Sparkle,
   },
   {
-    label: "What happens behind the scenes?",
+    label: "Where's the clever bit?",
     value: "Which project best shows your systems thinking, and why?",
     icon: PlugsConnected,
   },
   {
-    label: "Tell me the honest version",
+    label: "No brochure, please",
     value: "Give me the honest short version of your work.",
     icon: EnvelopeSimple,
   },
   {
-    label: "Walk me through a project",
-    value: "Walk me through one of your projects.",
+    label: "Which bit fought back?",
+    value: "What engineering problem has taken the most thought in your work?",
     icon: PlugsConnected,
   },
   {
-    label: "What do you do outside work?",
-    value: "What do you do when you're not working?",
+    label: "What happens off the clock?",
+    value: "What do you do when you are not working?",
     icon: Sparkle,
   },
 ];

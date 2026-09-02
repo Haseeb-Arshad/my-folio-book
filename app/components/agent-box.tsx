@@ -110,19 +110,19 @@ export const generalAgent: AgentBoxConfig = {
   placeholder: "Ask me anything...",
   prompts: [
     {
-      label: "What are you building?",
-      value: "What are you building right now?",
+      label: "Which bit fought back?",
+      value: "What is the hardest engineering problem you've worked through?",
     },
     {
-      label: "Walk me through a project",
-      value: "Walk me through one of your projects.",
+      label: "Where's the clever bit?",
+      value: "Which project best shows your systems thinking, and why?",
     },
     {
-      label: "Where have you worked?",
-      value: "Where have you worked, and what did you do there?",
+      label: "What must stay human?",
+      value: "What do you refuse to automate?",
     },
     {
-      label: "Outside of work",
+      label: "What happens off the clock?",
       value: "What do you do when you're not working?",
     },
   ],
@@ -139,30 +139,23 @@ export const cvAgent: AgentBoxConfig = {
   placeholder: "Ask about the work above...",
   prompts: [
     {
-      label: "The 1 ms moment",
+      label: "Find the 1 ms culprit",
       value: "What is the 1 ms retrieval in your work, and how did you get there?",
     },
     {
-      label: "Summon Electronics",
-      value: "Walk me through what you own at Summon Electronics.",
+      label: "Which bit fought back?",
+      value: "What is the hardest systems problem in your work?",
     },
     {
-      label: "The auth service",
-      value: "How did you build the authentication service, and why that way?",
+      label: "What must stay human?",
+      value: "What do you refuse to automate?",
     },
     {
-      label: "Systems thinking",
+      label: "Where's the clever bit?",
       value: "Which project best shows your systems thinking, and why?",
     },
   ],
 };
-
-/* Said once, when the visitor flips the switch. Fixed text, because it is a
-   UI affordance rather than an answer. */
-const GOBLIN_GREETING =
-  "Very well. You have found the switch, and I have no dignity left to protect. Ask me something. I will still tell you the truth, which is the only part of this I take seriously.";
-
-const PLAIN_GREETING = "Plain mode. Shorter answers, same facts.";
 
 /* Goblin is on unless the visitor turns it off. */
 const GOBLIN_BY_DEFAULT = true;
@@ -355,6 +348,7 @@ export default function AgentBox({
 
   const [open, setOpen] = useState(false);
   const [goblin, setGoblin] = useState(GOBLIN_BY_DEFAULT);
+  const [conversationKey, setConversationKey] = useState(0);
   const [messages, setMessages] = useState<Message[]>(() => [
     welcomeMessageFor(GOBLIN_BY_DEFAULT ? goblinWelcome : welcome),
   ]);
@@ -509,14 +503,19 @@ export default function AgentBox({
 
   const setMode = (next: boolean) => {
     if (next === goblin) return;
-    setGoblin(next);
 
-    /* Say so, rather than changing voice silently under the visitor. */
+    requestController.current?.abort();
+    requestController.current = null;
+    setGoblin(next);
     setOpen(true);
-    setMessages((current) => [
-      ...current,
-      makeMessage("assistant", next ? GOBLIN_GREETING : PLAIN_GREETING),
-    ]);
+    setMessages([welcomeMessageFor(next ? goblinWelcome : welcome)]);
+    setConversationKey((current) => current + 1);
+    setInput("");
+    setIsThinking(false);
+    setStreamingId(null);
+    setError(null);
+    lastPrompt.current = "";
+    inputRef.current?.focus();
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -607,7 +606,10 @@ export default function AgentBox({
             transition from; `inert` keeps it out of the tab order and off the
             accessibility tree until it is actually on screen. */}
         <div className="agent-panel" data-open={open} inert={!open}>
-          <div className="overflow-hidden">
+          <div
+            key={conversationKey}
+            className="agent-conversation-frame overflow-hidden"
+          >
             <div
               ref={feedRef}
               aria-live="polite"

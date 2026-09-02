@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
+import BuildingStatus from "../components/building-status";
 import { type Project } from "../data/projects";
 import {
   getProjects,
@@ -164,10 +165,7 @@ function ProjectCard({ p }: { p: Project }) {
                   )}
                 </h3>
                 {p.status === "building" && (
-                  <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-data-shimmer" />
-                    Building
-                  </span>
+                  <BuildingStatus label="Building" logo={p.logo} />
                 )}
               </div>
               <span className="text-gray-400 text-xs shrink-0 font-mono">

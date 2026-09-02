@@ -33,6 +33,7 @@ export const projects: Project[] = [
     year: "2026",
     stack: ["TypeScript", "AI Agents", "PostgreSQL", "NetSuite / Xero"],
     live: "https://incillum.com",
+    logo: "/logos/incillum.svg",
     /* Closed source, so there is no repository to link. `code` is required by
        the schema, and `links` overrides the default "Code" link that would
        otherwise point at the marketing site and call it source. */
