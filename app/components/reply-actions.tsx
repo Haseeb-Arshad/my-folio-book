@@ -54,6 +54,19 @@ const PROJECT_ALIASES: Record<string, string> = {
    They still earn a route to the work page. */
 const UNLINKED_PROJECTS = ["CodingCam"];
 
+/* A short title beats matching every book row from the loader, and this list
+   changes rarely enough that hardcoding it here is simpler than threading
+   another prop through every AgentBox call site. */
+const BOOK_TITLES = [
+  "Rosie Project",
+  "Life 3.0",
+  "Singularity Is Near",
+  "Singularity Is Nearer",
+  "Beginning of Infinity",
+  "Deep Work",
+  "Kite Runner",
+];
+
 const MAX_ACTIONS = 3;
 
 /* Whole-word-ish match so "Milo" does not fire inside "milometer" and a
@@ -143,6 +156,26 @@ export function replyActions(
       key: "resume",
       label: "Open the résumé",
       href: "/resume",
+      external: false,
+    });
+  }
+
+  if (/\bchess(\.com)?\b/i.test(text)) {
+    push({
+      kind: "link",
+      key: "chess",
+      label: "Chess.com profile",
+      href: "https://www.chess.com/member/Haseeb_Arshad",
+      external: true,
+    });
+  }
+
+  if (BOOK_TITLES.some((title) => mentions(text, title))) {
+    push({
+      kind: "link",
+      key: "reading",
+      label: "See the reading list",
+      href: "/reading",
       external: false,
     });
   }

@@ -91,7 +91,7 @@ function latestUserText(messages: ConversationMessage[]) {
 
 /* Words that only ever mean the person: safe to route on alone. */
 const STRONG_PERSONAL =
-  /\b(hobb(y|ies)|jazz|playlist|free time|spare time|downtime|outside (of )?work|off the clock|for fun|weekend|personal life|as a person|what are you like|unwind|relax)\b/i;
+  /\b(hobb(y|ies)|jazz|playlist|free time|spare time|downtime|outside (of )?work|off the clock|for fun|weekend|personal life|as a person|what are you like|unwind|relax|chess|\belo\b|chess\.com|favou?rite book|kite runner|rosie project|kurzweil|singularity is near|beginning of infinity|deep work\b)\b/i;
 
 /* Words that mean the person in a personal sentence and something else
    entirely in a technical one. "Do you read much?" is personal. "How does

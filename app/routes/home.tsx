@@ -117,10 +117,10 @@ function SelectedReading({
           Selected reading
         </h2>
         <Link
-          to="/blog"
+          to="/reading"
           className="group flex items-center gap-1 text-[13px] text-gray-500 hover:text-gray-800 transition-colors"
         >
-          All blogs
+          All reading
           <svg
             width="13"
             height="13"

@@ -33,25 +33,35 @@ async function loadContent(env) {
   );
 }
 
-const staticCounts = { projects: 8, experience: 3, blogs: 6 };
+const staticCounts = { projects: 8, experience: 3, blogs: 6, books: 8 };
 
 // ── Scenario 1: no Supabase configured at all ─────────────────
 {
   const content = await loadContent({});
-  const [projects, experience, blogs, liveNotes] = await Promise.all([
+  const [projects, experience, blogs, books, liveNotes] = await Promise.all([
     content.getProjects(),
     content.getExperience(),
     content.getBlogs(),
+    content.getBooks(),
     content.getLiveNotes(),
   ]);
 
   assert.equal(projects.length, staticCounts.projects, "projects fell back");
   assert.equal(experience.length, staticCounts.experience, "experience fell back");
   assert.equal(blogs.length, staticCounts.blogs, "blogs fell back");
+  assert.equal(books.length, staticCounts.books, "books fell back");
   assert.deepEqual(liveNotes, [], "live notes are empty without a database");
   assert.ok(
     projects.every((p) => p.name && p.code),
     "fallback projects keep their shape"
+  );
+  assert.ok(
+    books.every((b) => b.title && b.author && b.note),
+    "fallback books keep their shape"
+  );
+  assert.ok(
+    books.some((b) => b.favorite),
+    "at least one fallback book is marked favourite"
   );
   console.log("  unconfigured        -> static data, no throw");
 }

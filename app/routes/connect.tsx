@@ -40,6 +40,14 @@ export default function Connect() {
           >
             GitHub
           </a>
+          <a
+            href="https://www.chess.com/member/Haseeb_Arshad"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-gray-900 underline underline-offset-2 text-sm hover:text-gray-600 transition-colors"
+          >
+            Chess
+          </a>
         </div>
       </BlurIn>
 

@@ -43,6 +43,10 @@ const topicCases = [
   // only the contact block and the project gets invented from its name.
   ["Tell me about Oriexa and how I can reach you.", "projects"],
   ["Where did you work before Summon, and how do I email you?", "experience"],
+  ["Do you play chess?", "personal"],
+  ["What's your chess.com rating?", "personal"],
+  ["What's your favourite book?", "personal"],
+  ["Have you read the Rosie Project?", "personal"],
 ];
 
 for (const [question, expectedTopic] of topicCases) {
@@ -99,6 +103,14 @@ assert.match(personalPrompt, /Haseeb listens to jazz/);
 // A music question should not drag the whole employment history into context.
 assert.doesNotMatch(personalPrompt, /## Work: Summon Electronics/);
 
+const chessPrompt = buildConversationPrompt(message("Do you play chess?"));
+assert.match(chessPrompt, /chess\.com/);
+assert.match(chessPrompt, /Peak rating is 1400/);
+assert.doesNotMatch(chessPrompt, /## Work: Summon Electronics/);
+
+const bookPrompt = buildConversationPrompt(message("What's your favourite book?"));
+assert.match(bookPrompt, /The Rosie Project/);
+
 // Live notes are absent unless the caller supplies them.
 assert.doesNotMatch(personalPrompt, /# Live notes supplied for this turn/);
 
@@ -129,4 +141,4 @@ assert.match(goblinPrompt, /supplied public notes are the only authority/);
 assert.match(goblinPrompt, /Do not use em dashes or en dashes/);
 assert.match(goblinPrompt, /## Snapshot/);
 
-console.log(`Verified ${topicCases.length + 24} conversation routing and prompt checks.`);
+console.log(`Verified ${topicCases.length + 28} conversation routing and prompt checks.`);
