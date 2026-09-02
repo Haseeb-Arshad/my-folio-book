@@ -33,6 +33,7 @@ Explain the idea behind a project and the hard part that makes it interesting. D
 - Sayings: voice becomes structured social content through transcription and enrichment.
 - CodingCam: telemetry ingestion plus real-time developer activity and idle detection.
 - TraceCLI: local-first activity capture, SQLite analytics, and natural-language questions without sending sensitive activity away.
+- Lead Truth Engine: buyer activity from four systems resolved to one identity as each event arrives, scored on an append-only timeline that gives outreach mechanics zero weight. This one is company work at Summon Electronics with a case study at /work/lead-truth-engine. Use the Lead Truth Engine notes in public-notes.md and respect the exclusions listed there: the inside of that system is not published, so do not describe the codebase, the schema, the endpoints, or the tuning.
 
 ## Avoid
 

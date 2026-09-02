@@ -3,6 +3,7 @@ import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import { getBooks, getBlogs, getPosts } from "../data/content.server";
 import type { Book } from "../data/books";
+import type { Blog } from "../data/blogs";
 
 export async function loader() {
   const [books, favorites, posts] = await Promise.all([
@@ -107,8 +108,39 @@ function BookCard({ book, delay }: { book: Book; delay: number }) {
   );
 }
 
+/* ─── One external link, used for both essays and sites ─── */
+function LinkRow({ blog, delay }: { blog: Blog; delay: number }) {
+  return (
+    <BlurIn delay={delay}>
+      <a
+        href={blog.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-start justify-between gap-4 py-5 border-b border-gray-50 hover:bg-gray-50/50 -mx-3 px-3 rounded-lg transition-colors"
+      >
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-900 font-medium group-hover:underline underline-offset-2">
+              {blog.title}
+            </span>
+            <ArrowOut />
+          </div>
+          <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+            {blog.note}
+          </p>
+        </div>
+        <span className="text-gray-400 text-sm shrink-0 pt-0.5">
+          {blog.author}
+        </span>
+      </a>
+    </BlurIn>
+  );
+}
+
 export default function Reading() {
   const { books, favorites, posts } = useLoaderData<typeof loader>();
+  const essays = favorites.filter((blog) => blog.kind !== "site");
+  const sites = favorites.filter((blog) => blog.kind === "site");
 
   return (
     <section className="pb-24">
@@ -173,37 +205,42 @@ export default function Reading() {
       )}
 
       {/* ─── Essays ─── */}
-      <BlurIn delay={books.length * 60 + 160}>
-        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
-          Essays I keep coming back to
-        </h3>
-      </BlurIn>
+      {essays.length > 0 && (
+        <div className="mb-12">
+          <BlurIn delay={books.length * 60 + 160}>
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+              Essays I keep coming back to
+            </h3>
+          </BlurIn>
 
-      {favorites.map((blog, i) => (
-        <BlurIn key={blog.url} delay={books.length * 60 + 220 + i * 70}>
-          <a
-            href={blog.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-start justify-between gap-4 py-5 border-b border-gray-50 hover:bg-gray-50/50 -mx-3 px-3 rounded-lg transition-colors"
-          >
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-900 font-medium group-hover:underline underline-offset-2">
-                  {blog.title}
-                </span>
-                <ArrowOut />
-              </div>
-              <p className="text-gray-500 text-sm mt-1 leading-relaxed">
-                {blog.note}
-              </p>
-            </div>
-            <span className="text-gray-400 text-sm shrink-0 pt-0.5">
-              {blog.author}
-            </span>
-          </a>
-        </BlurIn>
-      ))}
+          {essays.map((blog, i) => (
+            <LinkRow
+              key={blog.url}
+              blog={blog}
+              delay={books.length * 60 + 220 + i * 70}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ─── Sites ─── */}
+      {sites.length > 0 && (
+        <div>
+          <BlurIn delay={books.length * 60 + 220 + essays.length * 70}>
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">
+              Sites I keep open
+            </h3>
+          </BlurIn>
+
+          {sites.map((blog, i) => (
+            <LinkRow
+              key={blog.url}
+              blog={blog}
+              delay={books.length * 60 + 280 + (essays.length + i) * 70}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

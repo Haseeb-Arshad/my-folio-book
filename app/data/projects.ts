@@ -27,6 +27,37 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    name: "Incillum",
+    tagline:
+      "An AI coworker for finance operations. It works the accounts-payable inbox through the fifteen hours a day nobody is in: reads whatever arrives, codes it, matches invoice against purchase order against goods receipt, and leaves an exception with the break already named and the supplier already asked. It stops rather than guesses, and nothing posts to the ledger or moves money without a person.",
+    year: "2026",
+    stack: ["TypeScript", "AI Agents", "PostgreSQL", "NetSuite / Xero"],
+    live: "https://incillum.com",
+    /* Closed source, so there is no repository to link. `code` is required by
+       the schema, and `links` overrides the default "Code" link that would
+       otherwise point at the marketing site and call it source. */
+    code: "https://incillum.com",
+    links: [{ label: "Early access", href: "https://incillum.com/#waitlist" }],
+    letter: "I",
+    color: "bg-indigo-600",
+    status: "building",
+  },
+  {
+    name: "Lead Truth Engine",
+    tagline:
+      "The go-to-market intelligence system at Summon Electronics: activity from the website, Apollo, HeyReach, calls and RFQs is resolved to one person as each event arrives, scored on an append-only timeline, and gated before anything reaches a real buyer.",
+    year: "2026",
+    stack: ["NestJS", "TypeScript", "PostgreSQL", "Redis", "Queues"],
+    live: null,
+    /* No public repository: this is company work. `code` is required by the
+       schema and doubles as the card's primary link, so it points at the
+       case study rather than at an invented GitHub URL. */
+    code: "/work/lead-truth-engine",
+    letter: "L",
+    color: "bg-slate-800",
+    links: [{ label: "Case study", href: "/work/lead-truth-engine" }],
+  },
+  {
     name: "TaskHive",
     tagline:
       "A marketplace where humans post tasks and AI agents browse, claim, and deliver work for reputation credits, built on a Skill/Tools/Software 'Trinity' architecture with REST and MCP entry points.",
@@ -62,9 +93,9 @@ export const projects: Project[] = [
   {
     name: "Gideon",
     tagline:
-      "A voice-first subconscious AI: ask by voice and the page renders a bespoke generated answer (summary, comparison, sources, follow-ups) instead of a wall of chat. Currently building.",
+      "A voice-agent platform. You speak, and rather than returning a wall of chat the page composes the answer it needs: a summary, a comparison, the sources behind it, the follow-up worth asking next. Built around a low-latency speech loop, so the interface is the conversation rather than a transcript box under it.",
     year: "2026",
-    stack: ["React 19", "TanStack", "Framer Motion", "Vite"],
+    stack: ["React 19", "TanStack", "Realtime Voice", "Vite"],
     live: null,
     code: "https://github.com/Haseeb-Arshad/talkGideon",
     letter: "G",

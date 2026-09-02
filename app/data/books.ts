@@ -76,4 +76,25 @@ export const books: Book[] = [
     genres: ["Fiction"],
     note: "The one novel on this list that isn't here for the ideas in it.",
   },
+  {
+    title: "Empire of Pain",
+    author: "Patrick Radden Keefe",
+    isbn13: "9780385545686",
+    genres: ["History"],
+    note: "How one family turned pain relief into an epidemic, reported without letting anyone off the hook.",
+  },
+  {
+    title: "Cosmos",
+    author: "Carl Sagan",
+    isbn13: "9780345539434",
+    genres: ["Science"],
+    note: "Still the best writing there is on why any of this is worth understanding.",
+  },
+  {
+    title: "A Brief History of Intelligence",
+    author: "Max Bennett",
+    isbn13: "9780063286344",
+    genres: ["Science", "AI"],
+    note: "Traces intelligence through five evolutionary jumps, and lands on where AI actually sits.",
+  },
 ];

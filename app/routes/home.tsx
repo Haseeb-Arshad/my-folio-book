@@ -191,6 +191,18 @@ export default function Home() {
             Founding Full-Stack &amp; Principal Engineer at <CompanyLink />,
             AI &amp; Agentic Systems
           </p>
+          <p className="text-[0.95rem] text-gray-400 mt-2">
+            Currently building{" "}
+            <a
+              href="https://incillum.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-gray-600 underline decoration-gray-300 underline-offset-2 hover:decoration-gray-500 transition-colors"
+            >
+              Incillum
+            </a>
+            , an AI coworker for finance operations.
+          </p>
         </section>
       </BlurIn>
 

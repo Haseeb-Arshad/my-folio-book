@@ -8,6 +8,11 @@ import {
   type Post,
 } from "./blogs";
 import { books as staticBooks, type Book } from "./books";
+import {
+  caseStudies as staticCaseStudies,
+  type CaseStudy,
+  type CaseStudySection,
+} from "./case-studies";
 import type { LiveNote } from "../agent/prompt.server";
 
 /* ───────────────────────────────────────────────────────────
@@ -123,6 +128,57 @@ export async function getExperience(): Promise<Experience[]> {
   );
 }
 
+/**
+ * Case studies. Unpublished by default in Supabase, because a write-up about
+ * employer work should not go live before its clearance is settled. The static
+ * copy is the fallback, so the page still renders with no credentials.
+ */
+export async function getCaseStudies(): Promise<CaseStudy[]> {
+  return read(
+    "case_studies",
+    async () => {
+      const data = await rows(
+        supabaseServer()!
+          .from("case_studies")
+          .select("*")
+          .eq("published", true)
+          .order("sort_order", { ascending: true })
+      );
+      if (data.length === 0) return staticCaseStudies;
+
+      return data.map((row: Record<string, any>): CaseStudy => ({
+        slug: row.slug,
+        title: row.title,
+        summary: row.summary,
+        org: row.org,
+        role: row.role,
+        team: row.team,
+        stack: row.stack ?? [],
+        scope: row.scope,
+        excerpt: row.excerpt,
+        sections: (row.sections ?? []) as CaseStudySection[],
+        provenance: row.provenance ?? "",
+      }));
+    },
+    staticCaseStudies
+  );
+}
+
+export async function getCaseStudy(slug: string): Promise<CaseStudy | undefined> {
+  const all = await getCaseStudies();
+  return all.find((study) => study.slug === slug);
+}
+
+/** Case studies keyed by the experience `org` they belong to. */
+export async function getCaseStudiesByOrg(): Promise<Map<string, CaseStudy[]>> {
+  const all = await getCaseStudies();
+  const byOrg = new Map<string, CaseStudy[]>();
+  for (const study of all) {
+    byOrg.set(study.org, [...(byOrg.get(study.org) ?? []), study]);
+  }
+  return byOrg;
+}
+
 export async function getBlogs(): Promise<Blog[]> {
   return read(
     "blogs",
@@ -142,6 +198,7 @@ export async function getBlogs(): Promise<Blog[]> {
         url: row.url,
         note: row.note,
         featured: row.featured ?? false,
+        kind: row.kind === "site" ? "site" : "essay",
       }));
     },
     staticFavorites

@@ -11,6 +11,7 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 import Header, { Nav } from "./components/header";
+import Cursor from "./components/cursor";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -21,7 +22,7 @@ export const links: Route.LinksFunction = () => [
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@400;500;600;700&family=Roboto:ital,wght@0,300;0,400;0,500;1,400&display=swap",
   },
 ];
 
@@ -36,6 +37,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        {/* Last child of body so it blends against the whole page: a filter or
+            an `isolation` on an ancestor would trap the blend in that
+            subtree. */}
+        <Cursor />
         <ScrollRestoration />
         <Scripts />
       </body>

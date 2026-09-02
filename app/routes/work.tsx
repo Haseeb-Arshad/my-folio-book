@@ -1,15 +1,30 @@
 import { useState, useRef } from "react";
-import { useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import { type Project } from "../data/projects";
-import { getProjects, getExperience } from "../data/content.server";
+import {
+  getProjects,
+  getExperience,
+  getCaseStudiesByOrg,
+} from "../data/content.server";
 
 export async function loader() {
-  const [projects, experience] = await Promise.all([
+  const [projects, experience, byOrg] = await Promise.all([
     getProjects(),
     getExperience(),
+    getCaseStudiesByOrg(),
   ]);
-  return { projects, experience };
+
+  /* A Map does not survive the loader boundary, so hand the route a plain
+     object keyed by org with only the fields the card needs. */
+  const caseStudies = Object.fromEntries(
+    [...byOrg].map(([org, studies]) => [
+      org,
+      studies.map((s) => ({ slug: s.slug, title: s.title })),
+    ])
+  );
+
+  return { projects, experience, caseStudies };
 }
 
 export function meta() {
@@ -22,6 +37,10 @@ export function meta() {
   ];
 }
 
+/* Case-study routes live on this site, so they must not open in a new tab
+   or lose client-side navigation. */
+const isInternal = (href: string) => href.startsWith("/");
+
 /* ─── tiny link with arrow ─── */
 function ProjectLink({
   href,
@@ -32,30 +51,50 @@ function ProjectLink({
   label: string;
   external?: boolean;
 }) {
+  const internal = isInternal(href);
+  const arrow = (
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="opacity-50 group-hover/link:opacity-100 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-all duration-200 ease-out"
+    >
+      {external && !internal ? (
+        <path d="M7 17L17 7M17 7H8M17 7v9" />
+      ) : (
+        <path d="M5 12h14M12 5l7 7-7 7" />
+      )}
+    </svg>
+  );
+  const className =
+    "group/link inline-flex items-center gap-1 text-[13px] text-gray-500 hover:text-gray-900 transition-colors";
+
+  if (internal) {
+    return (
+      <Link
+        to={href}
+        onClick={(e) => e.stopPropagation()}
+        className={className}
+      >
+        {label}
+        {arrow}
+      </Link>
+    );
+  }
+
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="group/link inline-flex items-center gap-1 text-[13px] text-gray-500 hover:text-gray-900 transition-colors"
+      className={className}
     >
       {label}
-      <svg
-        width="12"
-        height="12"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        className="opacity-50 group-hover/link:opacity-100 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-all duration-200 ease-out"
-      >
-        {external ? (
-          <path d="M7 17L17 7M17 7H8M17 7v9" />
-        ) : (
-          <path d="M5 12h14M12 5l7 7-7 7" />
-        )}
-      </svg>
+      {arrow}
     </a>
   );
 }
@@ -106,14 +145,23 @@ function ProjectCard({ p }: { p: Project }) {
             <div className="flex items-baseline justify-between gap-3">
               <div className="flex items-center gap-2 min-w-0">
                 <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
-                  <a
-                    href={primary}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                  >
-                    {p.name}
-                  </a>
+                  {isInternal(primary) ? (
+                    <Link
+                      to={primary}
+                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+                    >
+                      {p.name}
+                    </Link>
+                  ) : (
+                    <a
+                      href={primary}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
+                    >
+                      {p.name}
+                    </a>
+                  )}
                 </h3>
                 {p.status === "building" && (
                   <span className="shrink-0 inline-flex items-center gap-1 text-[10px] font-medium text-emerald-700 bg-emerald-50 rounded-full px-2 py-0.5">
@@ -182,7 +230,7 @@ function ProjectCard({ p }: { p: Project }) {
 }
 
 export default function Work() {
-  const { projects, experience } = useLoaderData<typeof loader>();
+  const { projects, experience, caseStudies } = useLoaderData<typeof loader>();
 
   return (
     <section className="pb-24">
@@ -237,6 +285,39 @@ export default function Work() {
                 </li>
               ))}
             </ul>
+
+            {/* Deep-dives on systems built inside this role. */}
+            {(caseStudies[job.org] ?? []).length > 0 && (
+              <div className="mt-5 border-t border-gray-100 pt-5">
+                <h5 className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
+                  Case studies
+                </h5>
+                <div className="mt-3 flex flex-col gap-2">
+                  {caseStudies[job.org].map((study) => (
+                    <Link
+                      key={study.slug}
+                      to={`/work/${study.slug}`}
+                      className="group/cs inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 transition-colors w-fit"
+                    >
+                      <span className="underline underline-offset-2 decoration-gray-300 group-hover/cs:decoration-gray-900 transition-colors">
+                        {study.title}
+                      </span>
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        className="opacity-50 group-hover/cs:opacity-100 group-hover/cs:translate-x-0.5 transition-all duration-200 ease-out"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </BlurIn>
       ))}

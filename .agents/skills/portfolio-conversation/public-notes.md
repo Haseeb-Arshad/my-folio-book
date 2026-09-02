@@ -60,6 +60,93 @@ Technologies explicitly associated with the role:
 - DigitalOcean
 - AI agents
 
+## Case study: Lead Truth Engine (Summon Electronics)
+
+Published at /work/lead-truth-engine. Answer at the level of the problem and the reasoning.
+The inside of the system is not published and must not be described. No date, month, or
+duration for this project is published anywhere, and none should be spoken: not a build
+period, not "over N months," not an opening or launch date. If asked when it was built,
+say that timing isn't part of the published write-up and offer what it does instead.
+
+What it is:
+
+- The go-to-market intelligence system behind the sales floor. It turns buyer activity from
+  the website, Apollo (email outreach), HeyReach (LinkedIn outreach), calls, and RFQs into
+  one scored, auditable timeline per person, and into the ranked queue sales works from.
+- Frame it as a system that works, not a list of shortcomings. The page names its next
+  engineering milestones under "Where it goes next"; use that framing rather than
+  presenting them as things that are broken or missing.
+- Every interaction is appended to an immutable timeline. The intent score is a projection
+  rebuilt from that history, not a counter that gets overwritten.
+- Built by Haseeb end to end: ingestion, identity resolution, scoring, the promotion and
+  safety gates, the cross-engine propagation, and the composition layer behind the sales
+  surface.
+
+The hard part, and the honest framing:
+
+- Identity resolution runs on every event inside a transaction that holds a database lock.
+  The first version locked only the first identifier after sorting, which let two events
+  sharing an email address but carrying different anonymous website IDs create two records
+  for one buyer. Locking every identifier on the event fixes it, and taking those locks in
+  a fixed order is what stops them deadlocking.
+- The scoring model gives zero weight to outreach mechanics: sending a message, requesting
+  a connection, having one accepted. They are recorded for attribution but do not move the
+  score, so a campaign cannot manufacture intent by sending more.
+- Nothing reaches a real person without passing a default-on safety switch and a promotion
+  gate that can route a decision to a human review queue.
+- Sales responses carry a data-trust envelope naming any source that failed, so a provider
+  being down never reads as an absence of buyer activity. Each source reports fresh,
+  degraded or stale independently rather than collapsing to one boolean.
+- Identity decisions have to cross two database engines that share no transaction. A merge
+  is written to a durable journal, applied inside a transaction on the commercial side, and
+  records the prior value of every row it rewrites, so a reversal restores the exact prior
+  state rather than inferring it. Applying twice is a no-op; a run that dies resumes.
+- The dashboard read cache is single-flight (concurrent readers share one refresh), bounded
+  and evicted oldest first, and uses a generation counter so a refresh started before an
+  invalidation cannot write a stale result back.
+- Clicks are bot-classified before they count. Scanners and preview fetchers open links and
+  are not buyers, and counting them would inflate the metric hardest for the most
+  security-conscious companies.
+
+Numbers that may be quoted, with their basis:
+
+- A hot join went from 17.6 seconds to 294 ms. A collation mismatch on the join keys forced
+  a conversion on both sides, which is not sargable, so the planner abandoned a unique index
+  for a full scan and hash join. Normalising the collation let the conversions be removed.
+  Measured in production, no date attached.
+- A dashboard read went from 1,092 ms to 91 ms after a check that filtered out none of the
+  rows it examined was moved from read time to write time. Measured in production, no date
+  attached.
+- A failing background refresh held the shared database in 71% of one-second samples across
+  a five-minute window. Measured in production. Backoff now puts a ceiling on what a query
+  that cannot complete is allowed to cost; restructuring that query so it is cheap in the
+  first place is named on the page as the next piece of work.
+- "Working one lead took two to three days, now a few hours when a lead flows through" is
+  reported by Haseeb and was never instrumented. Label it as reported if it is used at all.
+
+Scope, and how to answer an ownership question:
+
+- Haseeb built this himself, architecture through delivery: the truth engine, the
+  cross-engine propagation, the composition layer behind the sales surface, the Apollo and
+  HeyReach integrations, and the website instrumentation. Say it plainly.
+
+Do not say:
+
+- Any date, month, quarter, or duration connected to this project, for anything: when it
+  started, how long it took, or when a measurement was taken.
+- Any table or column name, any collation identifier, any buffer pool or other
+  infrastructure sizing, or the internal route of any dashboard.
+- Anything about the size or shape of the codebase: file counts, line counts, commit
+  counts, table or schema counts, endpoint counts, or test counts.
+- Any table name, column name, internal endpoint, internal dashboard name, or code.
+- Any scoring weight, temperature threshold, decay constant, or suppression rule.
+- Any count of buyers, leads, events, customers, rows, revenue, or pipeline value.
+- Any deployment or operational status for the system.
+- That the system is proven, scalable, or production-hardened. Say what it was measured to
+  do, not when.
+- That the CRM promotion path runs unattended. It is built, it works, and it is
+  deliberately held behind readiness constraints.
+
 ## Work: REMAP AI
 
 Role: Full-Stack Developer

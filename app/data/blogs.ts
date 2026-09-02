@@ -12,6 +12,9 @@ export type Blog = {
   note: string;
   /* surface this one on the home page */
   featured?: boolean;
+  /* "essay" is a piece to re-read; "site" is a place or tool to keep open.
+     They render in separate sections on the Reading page. */
+  kind?: "essay" | "site";
 };
 
 export type Post = {
@@ -61,6 +64,32 @@ export const favorites: Blog[] = [
     author: "Taro Langner",
     url: "https://tensorlabbet.com/",
     note: "A blog of deep learnings on where AI research actually stands.",
+  },
+  {
+    title: "My Friend Aaron",
+    author: "Rory McMeekin",
+    url: "https://rorz.io/writing/my-friend-aaron",
+    note: "A story about a friend, an internet audience, and a bet that goes too far.",
+  },
+  {
+    title: "Text Is King",
+    author: "Adam Mastroianni",
+    url: "https://www.experimental-history.com/p/text-is-king",
+    note: "The case that reading isn't dying, and still beats every other way of thinking hard.",
+  },
+  {
+    title: "Prl Journal",
+    author: "writewithprl.com",
+    url: "https://www.writewithprl.com/",
+    note: "The journaling app I actually keep up with. It reflects your own entries back at you.",
+    kind: "site",
+  },
+  {
+    title: "Alembic",
+    author: "lauri",
+    url: "https://alembic.space/",
+    note: "A writing tool that treats how an idea looks as part of the idea itself.",
+    kind: "site",
   },
 ];
 

@@ -39,6 +39,7 @@ function slugify(value) {
 
 const { projects } = await loadModule("app/data/projects.ts");
 const { experience } = await loadModule("app/data/experience.ts");
+const { caseStudies } = await loadModule("app/data/case-studies.ts");
 const { favorites, posts } = await loadModule("app/data/blogs.ts");
 const { books } = await loadModule("app/data/books.ts");
 
@@ -125,6 +126,47 @@ try {
     );
   }
   counts.experience = experience.length;
+
+  // ── case_studies ────────────────────────────────────────────
+  // `published` is deliberately left out of the update list. The column
+  // defaults to false, and whether a write-up about employer work is live is
+  // a decision made once in the dashboard, not something a re-seed should
+  // silently flip back or forward.
+  for (const [index, study] of caseStudies.entries()) {
+    await client.query(
+      `insert into public.case_studies
+         (slug, title, summary, org, role, team, stack, scope,
+          excerpt, sections, provenance, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12)
+       on conflict (slug) do update set
+         title = excluded.title,
+         summary = excluded.summary,
+         org = excluded.org,
+         role = excluded.role,
+         team = excluded.team,
+         stack = excluded.stack,
+         scope = excluded.scope,
+         excerpt = excluded.excerpt,
+         sections = excluded.sections,
+         provenance = excluded.provenance,
+         sort_order = excluded.sort_order`,
+      [
+        study.slug,
+        study.title,
+        study.summary,
+        study.org,
+        study.role,
+        study.team,
+        study.stack,
+        study.scope,
+        study.excerpt,
+        JSON.stringify(study.sections ?? []),
+        study.provenance ?? "",
+        index,
+      ]
+    );
+  }
+  counts.case_studies = caseStudies.length;
 
   // ── blogs ───────────────────────────────────────────────────
   for (const [index, blog] of favorites.entries()) {

@@ -33,23 +33,36 @@ async function loadContent(env) {
   );
 }
 
-const staticCounts = { projects: 8, experience: 3, blogs: 6, books: 8 };
+const staticCounts = {
+  projects: 10,
+  experience: 3,
+  blogs: 10,
+  books: 11,
+  caseStudies: 1,
+};
 
 // ── Scenario 1: no Supabase configured at all ─────────────────
 {
   const content = await loadContent({});
-  const [projects, experience, blogs, books, liveNotes] = await Promise.all([
-    content.getProjects(),
-    content.getExperience(),
-    content.getBlogs(),
-    content.getBooks(),
-    content.getLiveNotes(),
-  ]);
+  const [projects, experience, blogs, books, caseStudies, liveNotes] =
+    await Promise.all([
+      content.getProjects(),
+      content.getExperience(),
+      content.getBlogs(),
+      content.getBooks(),
+      content.getCaseStudies(),
+      content.getLiveNotes(),
+    ]);
 
   assert.equal(projects.length, staticCounts.projects, "projects fell back");
   assert.equal(experience.length, staticCounts.experience, "experience fell back");
   assert.equal(blogs.length, staticCounts.blogs, "blogs fell back");
   assert.equal(books.length, staticCounts.books, "books fell back");
+  assert.equal(
+    caseStudies.length,
+    staticCounts.caseStudies,
+    "case studies fell back"
+  );
   assert.deepEqual(liveNotes, [], "live notes are empty without a database");
   assert.ok(
     projects.every((p) => p.name && p.code),
@@ -73,14 +86,20 @@ const staticCounts = { projects: 8, experience: 3, blogs: 6, books: 8 };
     SUPABASE_SECRET_KEY: "sb_secret_not_a_real_key",
   });
 
-  const [projects, blogs, liveNotes] = await Promise.all([
+  const [projects, blogs, caseStudies, liveNotes] = await Promise.all([
     content.getProjects(),
     content.getBlogs(),
+    content.getCaseStudies(),
     content.getLiveNotes(),
   ]);
 
   assert.equal(projects.length, staticCounts.projects, "projects fell back");
   assert.equal(blogs.length, staticCounts.blogs, "blogs fell back");
+  assert.equal(
+    caseStudies.length,
+    staticCounts.caseStudies,
+    "case studies fell back"
+  );
   assert.deepEqual(liveNotes, [], "live notes stay empty when unreachable");
   console.log("  unreachable host    -> static data, no throw");
 }

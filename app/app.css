@@ -14,6 +14,10 @@
   --font-display: "Outfit", "ABC Diatype", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "SFMono-Regular", ui-monospace, monospace;
   --font-serif: "Instrument Serif", Georgia, "Times New Roman", serif;
+  /* Long-form body copy. Roboto is set for reading rather than for interface
+     chrome: it holds up at paragraph length and small sizes in a way the
+     display faces above do not. Headings stay on the serif. */
+  --font-reading: "Roboto", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
   /* ── Easing tokens (stronger than the CSS built-ins) ── */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -61,6 +65,59 @@ body {
 
 ::selection {
   @apply bg-gray-900 text-white;
+}
+
+/* ── Inverting cursor ──
+
+   A white disc in difference blend mode: it subtracts the backdrop instead of
+   covering it, so the ring inverts whatever it crosses. `pointer-events: none`
+   keeps it clear of hit testing, and it is aria-hidden in the markup. */
+.site-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: #fff;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  opacity: 0;
+  will-change: transform;
+  /* Size animates, opacity does not. A partly transparent element is composited
+     as its own group, which both dims the difference blend and stops it reading
+     as a true invert, so opacity is only ever 0 or 1. */
+  transition:
+    width 260ms var(--ease-out),
+    height 260ms var(--ease-out);
+}
+
+/* Over anything clickable the ring opens up, so the cursor signals what is
+   actionable without needing a second colour. */
+.site-cursor[data-over="true"] {
+  width: 48px;
+  height: 48px;
+}
+
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none;
+}
+
+/* Text entry keeps its native caret: the I-beam carries real information
+   about where typing will land, which the ring cannot replace. */
+html.has-custom-cursor input,
+html.has-custom-cursor textarea,
+html.has-custom-cursor [contenteditable="true"] {
+  cursor: auto;
+}
+
+/* No pointer to replace, so leave the device alone. */
+@media (pointer: coarse) {
+  .site-cursor {
+    display: none;
+  }
 }
 
 /* ── Blur entrance ── */

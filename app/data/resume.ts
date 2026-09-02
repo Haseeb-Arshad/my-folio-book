@@ -131,6 +131,22 @@ export const resumeProfile = {
   ] satisfies ResumeExperience[],
   projects: [
     {
+      name: "Incillum",
+      description: "AI Coworker for Finance Operations — incillum.com",
+      bullets: [
+        "Building an autonomous accounts-payable operator that reads invoices arriving as PDFs, photographed delivery notes, spreadsheets, or plain email, codes them to the correct account and cost centre, and runs a three-way match against purchase order and goods receipt, naming the discrepancy instead of returning a confidence score.",
+        "Designed the system around a hard human-in-the-loop boundary: nothing posts to the ledger and no payment is released without a person, with every extracted figure traceable to its source document; integrates the AP inbox (Outlook, Gmail) with NetSuite, Sage Intacct, and Xero.",
+      ],
+    },
+    {
+      name: "Gideon",
+      description: "Voice Agent Platform",
+      bullets: [
+        "Built a low-latency voice agent in which speech drives the interface directly: each response is composed as a rendered answer with summary, comparison, sources, and follow-ups, rather than streamed into a chat transcript.",
+        "Engineered the real-time speech loop and generative UI layer in React 19 and TypeScript, tuning turn-taking latency so the exchange holds as a conversation rather than a query-and-response cycle.",
+      ],
+    },
+    {
       name: "Oriexa",
       description: "AI Agent Marketplace & Orchestration Platform",
       bullets: [
