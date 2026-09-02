@@ -222,7 +222,7 @@ html.has-custom-cursor [contenteditable="true"] {
 /* ── Building signal ──
 
    The status is a tiny instrument, not a blinking light: Incillum's mark
-   stays still enough to read while six bars move through a measured pattern.
+   stays still while a small orbital pulse gives the state a little life.
    Every change is transform/opacity-only, so the card never reflows. */
 .building-status {
   display: inline-flex;
@@ -260,60 +260,59 @@ html.has-custom-cursor [contenteditable="true"] {
   font-weight: 500;
   line-height: 1;
 }
-.building-status__bars {
-  display: inline-flex;
-  align-items: end;
-  gap: 2px;
-  height: 0.9rem;
-  padding-bottom: 1px;
+.building-status__pulse {
+  position: relative;
+  display: inline-block;
+  width: 0.82rem;
+  height: 0.82rem;
+  flex: 0 0 auto;
+  border: 1px solid rgb(156 163 175 / 0.8);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(75 85 99 / 0.08) 0,
+    rgb(75 85 99 / 0) 68%
+  );
 }
-.building-status__bar {
-  display: block;
-  width: 2px;
-  height: 0.8rem;
-  transform: scaleY(0.35);
-  transform-origin: bottom;
-  border-radius: 9999px;
+.building-status__pulse-core {
+  position: absolute;
+  inset: 0.22rem;
+  border-radius: 50%;
   background: rgb(75 85 99);
-  animation: buildingBar 1.35s var(--ease-out) infinite alternate;
+  animation: buildingPulse 1.8s var(--ease-out) infinite;
 }
-.building-status__bar:nth-child(1) {
-  animation-delay: -0.86s;
-}
-.building-status__bar:nth-child(2) {
-  animation-delay: -0.52s;
-}
-.building-status__bar:nth-child(3) {
-  animation-delay: -0.18s;
-}
-.building-status__bar:nth-child(4) {
-  animation-delay: -0.7s;
-}
-.building-status__bar:nth-child(5) {
-  animation-delay: -0.36s;
-}
-.building-status__bar:nth-child(6) {
-  animation-delay: -0.04s;
+.building-status__pulse::after {
+  position: absolute;
+  top: -0.1rem;
+  left: 50%;
+  width: 0.2rem;
+  height: 0.2rem;
+  border-radius: 50%;
+  background: rgb(75 85 99);
+  content: "";
+  transform-origin: 50% 0.51rem;
+  animation: buildingOrbit 2.4s linear infinite;
 }
 .building-status__label {
   letter-spacing: 0.01em;
 }
-@keyframes buildingBar {
+@keyframes buildingPulse {
   0% {
-    opacity: 0.35;
-    transform: scaleY(0.25);
+    opacity: 0.45;
+    transform: scale(0.72);
   }
-  38% {
-    opacity: 0.7;
-    transform: scaleY(0.62);
-  }
-  72% {
+  52% {
     opacity: 1;
-    transform: scaleY(1);
+    transform: scale(1);
   }
   100% {
-    opacity: 0.55;
-    transform: scaleY(0.42);
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+@keyframes buildingOrbit {
+  to {
+    transform: rotate(360deg);
   }
 }
 
@@ -407,10 +406,11 @@ html.has-custom-cursor [contenteditable="true"] {
     animation: none;
     opacity: 0.5;
   }
-  .building-status__bar {
+  .building-status__pulse-core,
+  .building-status__pulse::after {
     animation: none;
     opacity: 0.65;
-    transform: scaleY(0.65);
+    transform: none;
   }
   .animate-agent-message,
   .agent-message-line,

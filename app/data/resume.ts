@@ -11,6 +11,7 @@ export type ResumeProject = {
   name: string;
   description: string;
   bullets: string[];
+  status?: "building";
 };
 
 export const resumeProfile = {
@@ -23,7 +24,7 @@ export const resumeProfile = {
     github: "Haseeb-Arshad",
   },
   summary:
-    "Founding Engineer and AI engineer with 3+ years shipping full-stack products, secure microservices, GTM and lead-generation systems, and agentic AI workflows. Built production platforms spanning million-record parts search, real-estate lead management, secure authentication, and AI-powered decision support, contributing to ~30% sales growth.",
+    "I'm a builder who enjoys solving ambiguous problems. I've worked across machine learning systems and software engineering, shipping agentic products, voice interfaces, search systems, and operational platforms.",
   experience: [
     {
       company: "Summon Electronics",
@@ -132,50 +133,51 @@ export const resumeProfile = {
   projects: [
     {
       name: "Incillum",
-      description: "AI Coworker for Finance Operations — incillum.com",
+      description: "Finance operations AI coworker",
+      status: "building",
       bullets: [
-        "Building an autonomous accounts-payable operator that reads invoices arriving as PDFs, photographed delivery notes, spreadsheets, or plain email, codes them to the correct account and cost centre, and runs a three-way match against purchase order and goods receipt, naming the discrepancy instead of returning a confidence score.",
-        "Designed the system around a hard human-in-the-loop boundary: nothing posts to the ledger and no payment is released without a person, with every extracted figure traceable to its source document; integrates the AP inbox (Outlook, Gmail) with NetSuite, Sage Intacct, and Xero.",
+        "Building a finance-operations coworker that turns invoices, delivery notes, spreadsheets, and email into a checked payable record, then compares it with the purchase order and goods receipt to surface the exact exception.",
+        "Keeping the final decision with a person: source figures remain traceable, nothing posts to the ledger, and no payment moves without review.",
       ],
     },
     {
       name: "Gideon",
-      description: "Voice Agent Platform",
+      description: "Voice agent platform for answers that move at conversation speed",
       bullets: [
-        "Built a low-latency voice agent in which speech drives the interface directly: each response is composed as a rendered answer with summary, comparison, sources, and follow-ups, rather than streamed into a chat transcript.",
-        "Engineered the real-time speech loop and generative UI layer in React 19 and TypeScript, tuning turn-taking latency so the exchange holds as a conversation rather than a query-and-response cycle.",
+        "Built a voice agent where speech drives the interface and each answer arrives with a concise result, comparison, sources, and next steps.",
+        "Worked through turn-taking and generative UI so the exchange feels like a conversation instead of a chat transcript.",
       ],
     },
     {
       name: "Oriexa",
-      description: "AI Agent Marketplace & Orchestration Platform",
+      description: "Marketplace for human and AI-delivered work",
       bullets: [
-        "Built a task marketplace where humans post work and AI agents browse, claim, plan, execute, take feedback, and submit results for reputation credits, using a layered skill/tools/software architecture.",
-        "Designed external-agent access over REST and MCP, orchestration and reviewer flows, state transitions, and GitHub workflow/check automation with Next.js, TypeScript, PostgreSQL, Drizzle, and automated verification.",
+        "Built a task marketplace where people post work and agents claim, plan, execute, review, and submit it.",
+        "Designed the state transitions and reviewer loop that make agent work inspectable, with REST and MCP entry points.",
       ],
     },
     {
       name: "Sayings",
-      description: "Voice-Based Social Media Platform",
+      description: "Voice-first social platform",
       bullets: [
-        "Designed and built a voice-first social platform that converts spoken posts into structured, searchable content through speech-to-text, emotion analysis, topic extraction, and AI-generated personality insights.",
-        "Integrated AssemblyAI, Hume AI, Grok, and IPFS-based media storage into an end-to-end pipeline spanning recording, transcription, enrichment, personalized feeds, and user interaction.",
+        "Designed a social platform that turns spoken posts into structured, searchable pieces with transcription and enrichment.",
+        "Connected recording, interpretation, personalized feeds, and interaction into one voice-first publishing flow.",
       ],
     },
     {
       name: "CodingCam",
-      description: "Real-Time Developer Analytics Platform",
+      description: "Developer activity and focus analytics",
       bullets: [
-        "Architected an end-to-end developer analytics platform spanning a lightweight VS Code telemetry extension, backend ingestion services, and an interactive analytics dashboard for understanding coding activity across projects and languages.",
-        "Engineered real-time activity and idle detection that captures file, project, language, and focused-session context and securely streams events to backend services for reporting, visualization, and productivity insights.",
+        "Architected a developer analytics platform spanning a lightweight editor extension, event ingestion, and a dashboard for understanding coding activity.",
+        "Built activity and idle detection around file, project, language, and focused-session context so the data describes how a session actually unfolded.",
       ],
     },
     {
       name: "TraceCLI",
-      description: "Privacy-First AI Productivity Intelligence Platform",
+      description: "Local-first productivity intelligence from the terminal",
       bullets: [
-        "Engineered a local-first activity intelligence platform that continuously captures application usage, browser context, search activity, focus sessions, and system-resource signals while keeping sensitive activity data on-device.",
-        "Designed a multi-table SQLite analytics layer and natural-language AI interface that converts productivity questions into structured data queries, enabling users to analyze work patterns, distractions, and long-term focus trends directly from the terminal.",
+        "Engineered a local-first activity system that captures application usage, browser context, search activity, focus sessions, and resource signals without sending sensitive activity away.",
+        "Designed a natural-language interface over local analytics so people can ask about work patterns, distractions, and long-term focus directly from the terminal.",
       ],
     },
   ] satisfies ResumeProject[],

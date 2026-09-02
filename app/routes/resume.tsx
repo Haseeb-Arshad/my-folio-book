@@ -84,6 +84,9 @@ function ViewerFallback() {
       <p className="mt-1 text-[13px] text-gray-500">
         {resumeProfile.headline}
       </p>
+      <p className="mt-4 text-[13px] leading-relaxed text-gray-600">
+        {resumeProfile.summary}
+      </p>
 
       <ul className="mt-6 flex flex-col divide-y divide-gray-100 border-y border-gray-100">
         {resumeProfile.experience.map((job) => (
@@ -104,8 +107,33 @@ function ViewerFallback() {
         ))}
       </ul>
 
+      <div className="mt-7">
+        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
+          Selected projects
+        </p>
+        <ul className="mt-3 flex flex-col divide-y divide-gray-100 border-y border-gray-100">
+          {resumeProfile.projects.map((project) => (
+            <li key={project.name} className="py-3.5">
+              <div className="flex items-baseline justify-between gap-3">
+                <p className="text-[14px] font-medium text-gray-900">
+                  {project.name}
+                </p>
+                {project.status && (
+                  <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-emerald-700">
+                    {project.status}
+                  </span>
+                )}
+              </div>
+              <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
+                {project.description}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       <p className="mt-6 text-[13px] leading-relaxed text-gray-500">
-        The full résumé, with projects, skills, and education, is in the PDF.
+        The PDF includes the detailed project work, skills, and education.
       </p>
       <div className="mt-4">
         <PdfActions />

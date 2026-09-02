@@ -20,13 +20,8 @@ export default function BuildingStatus({
         role="status"
         aria-label={`${label}, currently in progress`}
       >
-        <span className="building-status__bars" aria-hidden="true">
-          <span className="building-status__bar" />
-          <span className="building-status__bar" />
-          <span className="building-status__bar" />
-          <span className="building-status__bar" />
-          <span className="building-status__bar" />
-          <span className="building-status__bar" />
+        <span className="building-status__pulse" aria-hidden="true">
+          <span className="building-status__pulse-core" />
         </span>
         <span className="building-status__label">{label}</span>
       </span>
