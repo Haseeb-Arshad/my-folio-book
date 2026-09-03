@@ -29,9 +29,9 @@ export const projects: Project[] = [
   {
     name: "Incillum",
     tagline:
-      "An AI coworker for finance operations. It works the accounts-payable inbox through the fifteen hours a day nobody is in: reads whatever arrives, codes it, matches invoice against purchase order against goods receipt, and leaves an exception with the break already named and the supplier already asked. It stops rather than guesses, and nothing posts to the ledger or moves money without a person.",
+      "Persistent intelligence for enterprise operations. An AI system built to carry context, decisions and responsibility across long-running business work, acting within defined authority and bringing people in where judgment is required.",
     year: "2026",
-    stack: ["TypeScript", "AI Agents", "PostgreSQL", "NetSuite / Xero"],
+    stack: ["TypeScript", "AI Agents", "PostgreSQL", "Enterprise Ops"],
     live: "https://incillum.com",
     logo: "/logos/incillum.png",
     /* Closed source, so there is no repository to link. `code` is required by
@@ -110,7 +110,11 @@ export const projects: Project[] = [
     year: "2024",
     stack: ["Next.js 14", "Framer Motion", "Redux", "WebGL"],
     live: "https://theharsukh.com",
-    code: "https://github.com/Haseeb-Arshad/harsukh",
+    /* Company work at Almaymaar, not a personal repo: `code` is required by
+       the schema, and the empty `links` array suppresses the default "Code"
+       link so the card shows Live only. */
+    code: "https://theharsukh.com",
+    links: [],
     logo: "/logos/harsukh.png",
     letter: "H",
     color: "bg-stone-700",

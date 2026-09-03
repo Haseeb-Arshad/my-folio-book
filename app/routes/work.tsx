@@ -199,9 +199,12 @@ function ProjectCard({ p }: { p: Project }) {
                     external
                   />
                 ))
-              ) : (
+              ) : p.code !== p.live ? (
+                /* Company work and closed source have no repository to show, so
+                   `code` is set to the live URL. A "Code" link pointing at the
+                   product's own site would be calling a marketing page source. */
                 <ProjectLink href={p.code} label="Code" external />
-              )}
+              ) : null}
             </div>
           </div>
         </div>

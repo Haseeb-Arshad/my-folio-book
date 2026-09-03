@@ -194,7 +194,7 @@ export default function Home() {
           </p>
           <p className="text-[0.95rem] text-gray-500 mt-3">
             Founding Full-Stack &amp; Principal Engineer at <CompanyLink />,
-            AI &amp; Agentic Systems
+            AI &amp; Persistent Intelligence Systems
           </p>
           <p className="text-[0.95rem] text-gray-400 mt-2">
             Currently building{" "}
@@ -206,7 +206,7 @@ export default function Home() {
             >
               Incillum
             </a>
-            , an AI coworker for finance operations.
+            , a persistent intelligence system for enterprise operations.
           </p>
         </section>
       </BlurIn>
