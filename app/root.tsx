@@ -12,6 +12,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import Header, { Nav } from "./components/header";
 import Cursor from "./components/cursor";
+import PostHogAnalytics from "./components/posthog-analytics";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -36,6 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <PostHogAnalytics />
         {children}
         {/* Last child of body so it blends against the whole page: a filter or
             an `isolation` on an ancestor would trap the blend in that

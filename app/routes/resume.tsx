@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import AgentBox, { cvAgent } from "../components/agent-box";
 import { getBlogs, projectLinksFrom } from "../data/content.server";
 import { resumeProfile } from "../data/resume";
+import { capturePostHogEvent } from "../lib/analytics.client";
 
 export async function loader() {
   const [favorites, projectLinks] = await Promise.all([
@@ -32,6 +34,9 @@ function PdfActions() {
       <a
         href={PDF_PATH}
         download="Haseeb-Arshad-Resume.pdf"
+        onClick={() =>
+          capturePostHogEvent("cv_pdf_downloaded", { route_path: "/resume" })
+        }
         className="press inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-[13px] font-medium text-white transition-colors hover:bg-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
       >
         <svg
@@ -53,6 +58,9 @@ function PdfActions() {
         href={PDF_PATH}
         target="_blank"
         rel="noreferrer"
+        onClick={() =>
+          capturePostHogEvent("cv_pdf_opened", { route_path: "/resume" })
+        }
         className="press inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-2 text-[13px] text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
       >
         Open
@@ -203,6 +211,10 @@ function Reading({
 
 export default function Resume() {
   const { favorites, projectLinks } = useLoaderData<typeof loader>();
+
+  useEffect(() => {
+    capturePostHogEvent("cv_page_viewed", { route_path: "/resume" });
+  }, []);
 
   return (
     <>

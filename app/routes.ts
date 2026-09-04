@@ -12,5 +12,6 @@ export default [
   route("agent", "routes/agent.tsx"),
   route("resume", "routes/resume.tsx"),
   route("api/chat", "routes/api.chat.ts"),
+  route("api/agent-event", "routes/api.agent-event.ts"),
   route("playground", "routes/playground.tsx"),
 ] satisfies RouteConfig;

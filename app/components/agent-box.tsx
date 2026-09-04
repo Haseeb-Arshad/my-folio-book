@@ -12,6 +12,11 @@ import {
   replyActions,
   type ProjectLink,
 } from "./reply-actions";
+import {
+  captureAgentEvent,
+  createAnalyticsId,
+  getAnalyticsVisitorId,
+} from "../lib/analytics.client";
 
 /* ───────────────────────────────────────────────────────────
    A single search box that unfolds into a conversation.
@@ -96,6 +101,7 @@ export type AgentBoxConfig = {
   goblinWelcome: string;
   placeholder: string;
   prompts: AgentPrompt[];
+  surface: "home" | "resume";
 };
 
 /* Home page. Nothing is out of scope, so the openers spread across current
@@ -108,6 +114,7 @@ export const generalAgent: AgentBoxConfig = {
   goblinWelcome:
     "You have landed in the wordy mode, which is switched on by default because nobody stopped me. Ask about the work, the projects, or the man behind them. I will not invent a single thing, however much better the story would be. :)",
   placeholder: "Ask me anything...",
+  surface: "home",
   prompts: [
     {
       label: "Which bit fought back?",
@@ -137,6 +144,7 @@ export const cvAgent: AgentBoxConfig = {
   goblinWelcome:
     "Everything above is the tidy version. Ask me about any line of it and you will get the longer, more honest one. Still true, just less well behaved. :)",
   placeholder: "Ask about the work above...",
+  surface: "resume",
   prompts: [
     {
       label: "Find the 1 ms culprit",
@@ -297,13 +305,13 @@ function Bubble({
             Haseeb
           </p>
         )}
-        <div
-          className={
-            isAssistant
-              ? "rounded-2xl rounded-tl-md border border-gray-100 bg-gray-50/80 px-4 py-3 text-[14px] leading-6 text-gray-700"
-              : "rounded-2xl rounded-tr-md bg-gray-900 px-4 py-3 text-[14px] leading-6 text-white"
-          }
-        >
+          <div
+            className={`ph-no-capture ${
+              isAssistant
+                ? "rounded-2xl rounded-tl-md border border-gray-100 bg-gray-50/80 px-4 py-3 text-[14px] leading-6 text-gray-700"
+                : "rounded-2xl rounded-tr-md bg-gray-900 px-4 py-3 text-[14px] leading-6 text-white"
+            }`}
+          >
           <MessageText
             text={message.text}
             delays={message.delays}
@@ -349,6 +357,7 @@ export default function AgentBox({
   const [open, setOpen] = useState(false);
   const [goblin, setGoblin] = useState(GOBLIN_BY_DEFAULT);
   const [conversationKey, setConversationKey] = useState(0);
+  const [conversationId, setConversationId] = useState(createAnalyticsId);
   const [messages, setMessages] = useState<Message[]>(() => [
     welcomeMessageFor(GOBLIN_BY_DEFAULT ? goblinWelcome : welcome),
   ]);
@@ -363,6 +372,7 @@ export default function AgentBox({
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const requestController = useRef<AbortController | null>(null);
   const lastPrompt = useRef("");
+  const openedRef = useRef(false);
 
   useEffect(() => {
     return () => requestController.current?.abort();
@@ -386,6 +396,14 @@ export default function AgentBox({
     if (!value || isThinking) return;
 
     setOpen(true);
+    if (!openedRef.current) {
+      openedRef.current = true;
+      captureAgentEvent("agent_opened", {
+        surface: config.surface,
+        mode: goblin ? "goblin" : "plain",
+        conversation_id: conversationId,
+      }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
+    }
     setError(null);
     lastPrompt.current = value;
     setInput("");
@@ -395,6 +413,16 @@ export default function AgentBox({
       : messages;
     if (appendUser) setMessages(conversation);
     setIsThinking(true);
+
+    const startedAt = performance.now();
+    if (appendUser) {
+      captureAgentEvent("agent_message_sent", {
+        surface: config.surface,
+        mode: goblin ? "goblin" : "plain",
+        conversation_id: conversationId,
+        message_characters: value.length,
+      }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
+    }
 
     requestController.current?.abort();
     const controller = new AbortController();
@@ -407,6 +435,12 @@ export default function AgentBox({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           goblin,
+          context: {
+            visitor_id: getAnalyticsVisitorId(),
+            conversation_id: conversationId,
+            surface: config.surface,
+            mode: goblin ? "goblin" : "plain",
+          },
           messages: conversation.slice(-MAX_TURNS).map(({ role, text }) => ({
             role,
             content: text,
@@ -485,8 +519,22 @@ export default function AgentBox({
       if (!answer.trim()) {
         throw new Error("That reply came back empty. Try once more.");
       }
+
+      captureAgentEvent("agent_reply_completed", {
+        surface: config.surface,
+        mode: goblin ? "goblin" : "plain",
+        conversation_id: conversationId,
+        response_characters: answer.length,
+        duration_ms: Math.round(performance.now() - startedAt),
+      }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
     } catch (caught) {
       if (controller.signal.aborted) return;
+      captureAgentEvent("agent_reply_failed", {
+        surface: config.surface,
+        mode: goblin ? "goblin" : "plain",
+        conversation_id: conversationId,
+        duration_ms: Math.round(performance.now() - startedAt),
+      }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
       setError(
         caught instanceof Error
           ? caught.message
@@ -504,9 +552,16 @@ export default function AgentBox({
   const setMode = (next: boolean) => {
     if (next === goblin) return;
 
+    captureAgentEvent("agent_mode_changed", {
+      surface: config.surface,
+      from_mode: goblin ? "goblin" : "plain",
+      to_mode: next ? "goblin" : "plain",
+      conversation_id: conversationId,
+    }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
     requestController.current?.abort();
     requestController.current = null;
     setGoblin(next);
+    setConversationId(createAnalyticsId());
     setOpen(true);
     setMessages([welcomeMessageFor(next ? goblinWelcome : welcome)]);
     setConversationKey((current) => current + 1);
@@ -531,12 +586,18 @@ export default function AgentBox({
   };
 
   const resetConversation = () => {
+    captureAgentEvent("agent_conversation_reset", {
+      surface: config.surface,
+      mode: goblin ? "goblin" : "plain",
+      conversation_id: conversationId,
+    }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
     requestController.current?.abort();
     requestController.current = null;
     setMessages([
       welcomeMessageFor(GOBLIN_BY_DEFAULT ? goblinWelcome : welcome),
     ]);
     setGoblin(GOBLIN_BY_DEFAULT);
+    setConversationId(createAnalyticsId());
     setStreamingId(null);
     setInput("");
     setIsThinking(false);
@@ -661,7 +722,17 @@ export default function AgentBox({
             rows={1}
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            onFocus={() => setOpen(true)}
+            onFocus={() => {
+              setOpen(true);
+              if (!openedRef.current) {
+                openedRef.current = true;
+                captureAgentEvent("agent_opened", {
+                  surface: config.surface,
+                  mode: goblin ? "goblin" : "plain",
+                  conversation_id: conversationId,
+                }, { surface: config.surface, mode: goblin ? "goblin" : "plain", conversationId });
+              }
+            }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={isThinking}

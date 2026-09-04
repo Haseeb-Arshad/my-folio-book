@@ -4,6 +4,14 @@ import {
   type ConversationMessage,
 } from "../agent/prompt.server";
 import { getLiveNotes } from "../data/content.server";
+import {
+  recordChatMessage,
+  parseChatPersistenceContext,
+  type ChatMode,
+  type ChatPersistenceContext,
+  type ChatSurface,
+  type ChatStatus,
+} from "../data/chat.server";
 
 const OPENROUTER_ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const DEFAULT_MODEL = "openai/gpt-4.1-mini";
@@ -28,6 +36,22 @@ type OpenRouterStreamChunk = {
 };
 
 const requestLog = new Map<string, number[]>();
+
+async function persistAssistant(
+  context: ChatPersistenceContext | null,
+  text: string,
+  status: ChatStatus,
+  durationMs: number,
+) {
+  if (!context) return;
+  await recordChatMessage(
+    context,
+    "assistant",
+    text || "(No assistant reply was produced.)",
+    status,
+    { duration_ms: Math.max(0, Math.round(durationMs)) },
+  );
+}
 
 function jsonResponse(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -184,15 +208,18 @@ function parseSseEvent(event: string) {
   }
 }
 
-function proxyTextStream(
+async function proxyTextStream(
   upstream: Response,
   upstreamController: AbortController,
   timeout: ReturnType<typeof setTimeout>,
-  request: Request
+  request: Request,
+  context: ChatPersistenceContext | null,
+  startedAt: number,
 ) {
   const body = upstream.body;
   if (!body) {
     clearTimeout(timeout);
+    await persistAssistant(context, "", "failed", Date.now() - startedAt);
     return jsonResponse({ error: "That reply didn't come through. Try once more." }, 502);
   }
 
@@ -201,6 +228,14 @@ function proxyTextStream(
   const reader = body.getReader();
   let closed = false;
   let outputCharacters = 0;
+  let outputText = "";
+  let assistantRecorded = false;
+
+  const persist = async (status: ChatStatus) => {
+    if (assistantRecorded) return;
+    assistantRecorded = true;
+    await persistAssistant(context, outputText, status, Date.now() - startedAt);
+  };
 
   const abortUpstream = () => upstreamController.abort();
   request.signal.addEventListener("abort", abortUpstream, { once: true });
@@ -238,10 +273,18 @@ function proxyTextStream(
               if (text) {
                 destination.enqueue(encoder.encode(text));
                 outputCharacters += text.length;
+                outputText += text;
               }
             }
 
             if (parsed.done || outputCharacters >= MAX_OUTPUT_CHARACTERS) {
+              await persist(
+                outputText.trim()
+                  ? outputCharacters >= MAX_OUTPUT_CHARACTERS
+                    ? "truncated"
+                    : "completed"
+                  : "failed",
+              );
               closed = true;
               upstreamController.abort();
               destination.close();
@@ -256,14 +299,19 @@ function proxyTextStream(
             if (parsed.text && outputCharacters < MAX_OUTPUT_CHARACTERS) {
               const remaining = MAX_OUTPUT_CHARACTERS - outputCharacters;
               const text = normalizeAssistantText(parsed.text).slice(0, remaining);
-              if (text) destination.enqueue(encoder.encode(text));
+              if (text) {
+                destination.enqueue(encoder.encode(text));
+                outputText += text;
+              }
             }
+            await persist(outputText.trim() ? "completed" : "failed");
             closed = true;
             destination.close();
             return;
           }
         }
       } catch {
+        await persist("failed");
         if (!closed) {
           closed = true;
           destination.close();
@@ -275,6 +323,7 @@ function proxyTextStream(
     cancel() {
       closed = true;
       upstreamController.abort();
+      void persist("failed");
       clearTimeout(timeout);
     },
   });
@@ -327,18 +376,39 @@ export async function action({ request }: ActionFunctionArgs) {
     typeof payload === "object" &&
     payload !== null &&
     (payload as { goblin?: unknown }).goblin === true;
+  const context =
+    typeof payload === "object" && payload !== null
+      ? parseChatPersistenceContext(
+          (payload as { context?: unknown }).context,
+          goblin ? "goblin" : "plain",
+        )
+      : null;
+  const startedAt = Date.now();
+
+  if (context) {
+    await recordChatMessage(
+      context,
+      "user",
+      messages.at(-1)!.content,
+      "completed",
+    );
+  }
 
   /* The canned instant replies are written in the default voice, so they would
      break character. In goblin mode every turn goes to the model. */
   if (!goblin) {
     const instantReply = instantConversationReply(messages);
-    if (instantReply) return textResponse(instantReply);
+    if (instantReply) {
+      await persistAssistant(context, instantReply, "completed", Date.now() - startedAt);
+      return textResponse(instantReply);
+    }
   }
 
   const apiKey =
     process.env.PORTFOLIO_OPENROUTER_API_KEY ??
     process.env.ALTHERAIL_MODEL_OPENROUTER_API_KEY;
   if (!apiKey?.trim()) {
+    await persistAssistant(context, "", "failed", Date.now() - startedAt);
     return jsonResponse(
       { error: "This conversation isn't available on the server right now." },
       503
@@ -386,6 +456,7 @@ export async function action({ request }: ActionFunctionArgs) {
     if (!upstream.ok) {
       clearTimeout(timeout);
       await upstream.body?.cancel().catch(() => undefined);
+      await persistAssistant(context, "", "failed", Date.now() - startedAt);
       return jsonResponse(
         {
           error:
@@ -397,9 +468,17 @@ export async function action({ request }: ActionFunctionArgs) {
       );
     }
 
-    return proxyTextStream(upstream, upstreamController, timeout, request);
+    return proxyTextStream(
+      upstream,
+      upstreamController,
+      timeout,
+      request,
+      context,
+      startedAt,
+    );
   } catch (error) {
     clearTimeout(timeout);
+    await persistAssistant(context, "", "failed", Date.now() - startedAt);
     const message = error instanceof Error ? error.message : "unknown error";
     const isTimeout = message.toLowerCase().includes("abort");
     return jsonResponse(
