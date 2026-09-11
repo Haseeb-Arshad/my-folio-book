@@ -30,6 +30,21 @@ import type { LiveNote } from "../agent/prompt.server";
 
 const CACHE_MS = 60_000;
 
+/* Retired links stay suppressed even when an older Supabase row is still
+   published. The author fields remain in the source data for attribution and
+   future editorial use, but these two entries are no longer portfolio content. */
+const HIDDEN_BLOG_URLS = new Set([
+  "https://simonwillison.net",
+  "https://tensorlabbet.com",
+]);
+const HIDDEN_BLOG_TITLES = new Set(["simon willison", "tensorlabbet"]);
+
+function isVisibleBlog(row: Record<string, any>) {
+  const url = String(row.url ?? "").replace(/\/+$/, "").toLowerCase();
+  const title = String(row.title ?? "").trim().toLowerCase();
+  return !HIDDEN_BLOG_URLS.has(url) && !HIDDEN_BLOG_TITLES.has(title);
+}
+
 type Entry<T> = { value: T; at: number };
 const cache = new Map<string, Entry<unknown>>();
 
@@ -190,15 +205,16 @@ export async function getBlogs(): Promise<Blog[]> {
           .eq("published", true)
           .order("sort_order", { ascending: true })
       );
-      if (data.length === 0) return staticFavorites;
+      const visible = data.filter(isVisibleBlog);
+      if (visible.length === 0) return staticFavorites;
 
-      return data.map((row: Record<string, any>): Blog => ({
+      return visible.map((row: Record<string, any>): Blog => ({
         title: row.title,
         author: row.author,
         url: row.url,
         note: row.note,
         featured: row.featured ?? false,
-        kind: row.kind === "site" ? "site" : "essay",
+        kind: row.kind === "site" ? "site" : "blog",
       }));
     },
     staticFavorites

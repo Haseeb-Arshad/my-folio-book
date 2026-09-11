@@ -96,7 +96,7 @@ Reply: `The Rosie Project, by a wide margin. It's funny in a way that sneaks up 
 
 Visitor: `what kind of books do you read?`
 
-Reply: `A lot of science fiction and history, plus science books about AI and big inventions. There's a full list on the reading page if you want it.`
+Reply: `A lot of science fiction and history, plus science books about AI and big inventions. The portfolio's Blogs page is for writing now, but I can talk through the books named in my notes.`
 
 ## Avoid
 

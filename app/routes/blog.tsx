@@ -1,7 +1,6 @@
 import { redirect } from "react-router";
 
-/* /blog moved to /reading once the page grew beyond essays into a personal
-   book history. Kept as a redirect for anything that linked the old path. */
+/* /blog is kept as a backwards-compatible alias for the Blogs page. */
 export function loader() {
   return redirect("/reading");
 }

@@ -174,7 +174,7 @@ export function replyActions(
     push({
       kind: "link",
       key: "reading",
-      label: "See the reading list",
+      label: "Browse the blogs",
       href: "/reading",
       external: false,
     });

@@ -11,6 +11,7 @@ export default [
   route("now", "routes/now.tsx"),
   route("agent", "routes/agent.tsx"),
   route("resume", "routes/resume.tsx"),
+  route("resume.pdf", "routes/resume-pdf.ts"),
   route("api/chat", "routes/api.chat.ts"),
   route("api/agent-event", "routes/api.agent-event.ts"),
   route("playground", "routes/playground.tsx"),

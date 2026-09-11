@@ -45,8 +45,8 @@ const prompts: Prompt[] = [
     icon: Sparkle,
   },
   {
-    label: "Find the 1 ms culprit",
-    value: "Show me the 1 ms moment in your work.",
+    label: "What must stay human?",
+    value: "What do you refuse to automate?",
     icon: Sparkle,
   },
   {

@@ -2,16 +2,13 @@ import { useEffect } from "react";
 import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import AgentBox, { cvAgent } from "../components/agent-box";
-import { getBlogs, projectLinksFrom } from "../data/content.server";
+import { projectLinksFrom } from "../data/content.server";
 import { resumeProfile } from "../data/resume";
 import { capturePostHogEvent } from "../lib/analytics.client";
 
 export async function loader() {
-  const [favorites, projectLinks] = await Promise.all([
-    getBlogs(),
-    projectLinksFrom(),
-  ]);
-  return { favorites, projectLinks };
+  const projectLinks = await projectLinksFrom();
+  return { projectLinks };
 }
 
 export function meta() {
@@ -150,67 +147,8 @@ function ViewerFallback() {
   );
 }
 
-/* ─── Reading list ─── */
-function Reading({
-  favorites,
-}: {
-  favorites: { title: string; author: string; url: string; note: string }[];
-}) {
-  return (
-    <section className="pb-16">
-      <BlurIn>
-        <h3 className="mb-1 text-xs font-medium uppercase tracking-wider text-gray-400">
-          Reading
-        </h3>
-        <p className="mb-4 text-[13px] text-gray-500">
-          The writing that shaped how I think about this work.
-        </p>
-      </BlurIn>
-
-      <div className="border-t border-gray-100">
-        {favorites.map((blog, i) => (
-          <BlurIn key={blog.url} delay={60 + i * 55}>
-            <a
-              href={blog.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group -mx-3 flex items-start justify-between gap-4 rounded-lg border-b border-gray-50 px-3 py-4 transition-colors hover:bg-gray-50/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-            >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-[14px] font-medium text-gray-900 underline-offset-2 group-hover:underline">
-                    {blog.title}
-                  </span>
-                  <svg
-                    width="13"
-                    height="13"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    aria-hidden="true"
-                    className="shrink-0 text-gray-300 transition-all duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gray-500"
-                  >
-                    <path d="M7 17L17 7M17 7H8M17 7v9" />
-                  </svg>
-                </div>
-                <p className="mt-1 text-[13px] leading-relaxed text-gray-500">
-                  {blog.note}
-                </p>
-              </div>
-              <span className="shrink-0 pt-0.5 text-[13px] text-gray-400">
-                {blog.author}
-              </span>
-            </a>
-          </BlurIn>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export default function Resume() {
-  const { favorites, projectLinks } = useLoaderData<typeof loader>();
+  const { projectLinks } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     capturePostHogEvent("cv_page_viewed", { route_path: "/resume" });
@@ -255,8 +193,6 @@ export default function Resume() {
           </div>
         </div>
       </BlurIn>
-
-      <Reading favorites={favorites} />
 
       <AgentBox config={cvAgent} projectLinks={projectLinks} />
     </>

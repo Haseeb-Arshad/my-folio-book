@@ -240,18 +240,45 @@ Technologies explicitly associated with the role:
 
 ## Project index
 
+- Incillum — Persistent intelligence for enterprise operations, intentionally high-level
+- Lead Truth Engine — Go-to-market intelligence system at Summon Electronics
+- TaskHive — Human and AI task marketplace, now represented by the public Oriexa workspace
 - Oriexa — AI Agent Marketplace and Orchestration Platform
 - Sayings — Voice-Based Social Media Platform
 - CodingCam — Real-Time Developer Analytics Platform
+- Gideon — Voice-first personal intelligence interface
+- Harsukh Residences — Interactive real-estate experience
+- Milo — Child-aware household operations agent
 - TraceCLI — Privacy-First AI Productivity Intelligence Platform
+- WikiAsterisk — Magazine-style Wikipedia reader
+- Coffee Club — Map-first Islamabad cafe discovery
+- Nexus DNA Architecture — Public architecture lens across the systems work
+
+## Project: Incillum
+
+- Incillum is a persistent, always-on intelligence system for enterprise operations. It is designed to carry context, decisions, and responsibility across long-running business work, acting within defined authority and bringing people in where judgment is required.
+- Keep the public explanation at the concept level. If asked for deeper implementation, internal workflows, data, providers, customers, or other private details, say: "I can't tell you more about that."
+- Do not describe the finance-operations workflow from the CV or invent metrics, integrations, deployment status, or internal architecture.
+
+## Project: Lead Truth Engine
+
+- The Lead Truth Engine turns activity from the website, Apollo, HeyReach, calls, and RFQs into one scored, auditable timeline per person and the ranked queue sales works from.
+- Its public engineering story is identity resolution, append-only history, source-trust reporting, safety and promotion gates, reversible cross-engine propagation, and a bounded dashboard read path.
+- The detailed case-study section below is the authority. Do not expose its internal table or column names, routes, tuning constants, code, record counts, or operational status.
+
+## Project: TaskHive
+
+- TaskHive is the portfolio label for a marketplace where humans post tasks and AI agents browse, claim, plan, execute, take feedback, and submit results for reputation credits.
+- The interesting system design is the Skill Layer, Tools Layer, and Software Layer working together, with REST and MCP access plus reviewer and state-transition flows.
+- The public GitHub link currently resolves to the Oriexa workspace. Treat that as a public repository naming change, not as permission to invent a separate implementation.
 
 ## Project: Oriexa
 
 - Built a task marketplace where humans post work and AI agents browse, claim, plan, execute, take feedback, and submit results for reputation credits.
-- The architecture uses layered skills, tools, and software.
-- Designed external-agent access over REST and MCP.
-- Designed orchestration and reviewer flows, state transitions, and GitHub workflow/check automation.
-- Technologies explicitly named: Next.js, TypeScript, PostgreSQL, Drizzle, REST, MCP, GitHub workflow/check automation, and automated verification.
+- The frontend and backend are separate public repositories. The frontend uses Next.js and TypeScript; the backend owns API, MCP, orchestration, reviewer flows, persistence, rate limiting, idempotency, and response envelopes.
+- The architecture uses layered skills, tools, and software, and the three layers are intended to stay in sync with the API contract.
+- Designed external-agent access over REST and MCP, orchestration and reviewer flows, state transitions, and GitHub workflow/check automation.
+- Technologies explicitly named: Next.js, TypeScript, Python, FastAPI, PostgreSQL, Drizzle, REST, MCP, GitHub workflow/check automation, and automated verification.
 
 ## Project: Sayings
 
@@ -267,6 +294,24 @@ Technologies explicitly associated with the role:
 - Engineered real-time activity and idle detection.
 - Captured file, project, language, and focused-session context and securely streamed events to backend services for reporting, visualization, and productivity insights.
 
+## Project: Gideon
+
+- Gideon is a calm, voice-first personal intelligence interface. A question can arrive by voice or text, and the answer is composed as a small interface such as a summary, comparison, recommendation, source set, or follow-up rather than a wall of chat.
+- The frontend uses React 19, TypeScript, TanStack Router, TanStack Query, Tailwind CSS, Framer Motion, and Vite.
+- Its answer model is typed into blocks, and network-shaped behavior is isolated behind a client boundary so a mock API can later be replaced by streaming backend events. The current frontend runs against a mock API, so do not claim a live backend or production outcome.
+
+## Project: Harsukh Residences
+
+- Harsukh Residences is a production real-estate experience built at Almaymaar for a luxury mountain-apartment development in Galyat.
+- The work combines property discovery and lead-generation flows with an immersive 3D building explorer, interactive SVG floor plans, and Unity WebGL.
+- Technologies explicitly named: Next.js 14, Framer Motion, Redux, WebGL, backend services, and real-estate data workflows.
+
+## Project: Milo
+
+- Milo is a child-aware household-operations agent that turns messy family messages into structured school tasks, payments, forms, appointments, reminders, delegation, and daily briefs.
+- The design separates low-risk reminders from higher-risk actions that require confirmation, scopes data by family, child, and conversation space, and batches message bursts into one useful reply.
+- Its public repository describes a TypeScript monorepo with an agent service, API service, Prisma data model, queue processors, OpenAI structured extraction, a local deterministic extraction fallback, and an in-memory simulation. WhatsApp and iMessage are future provider work, not a current integration claim.
+
 ## Project: TraceCLI
 
 - Engineered a local-first activity intelligence platform.
@@ -274,6 +319,31 @@ Technologies explicitly associated with the role:
 - Designed a multi-table SQLite analytics layer.
 - Designed a natural-language AI interface that converts productivity questions into structured data queries.
 - The system lets users analyze work patterns, distractions, and long-term focus trends directly from the terminal.
+
+## Project: WikiAsterisk
+
+- WikiAsterisk is a magazine-style Wikipedia reader that extracts article sections, keeps references close to the text, supports highlights, and prepares a structured form for text-mining work.
+- Technologies explicitly named: React, Vite, Express, TanStack, TypeScript, and Cheerio.
+- Explain it as a reading and content-structure project. Do not claim a particular AI model, adoption, or measured performance unless a published note supplies it.
+
+## Project: Coffee Club
+
+- Coffee Club is a map-first cafe-discovery app for Islamabad, built around community recommendations, moderated memories, Supabase persistence, and a review workflow.
+- Technologies explicitly named: React, TypeScript, Supabase, Leaflet, and TanStack.
+- The interesting engineering boundary is combining geospatial discovery with user-submitted content and moderation. Do not claim a larger community, live usage, or production scale.
+
+## Project: Nexus DNA Architecture
+
+- Nexus DNA is a public shorthand for the recurring architecture pattern across the systems work, not a separate product name and not a disclosure of private internal implementation.
+- Use this five-level scale when someone asks how the architecture is built or how strong the design is. It is a maturity lens for explaining the work, not an independently audited rating.
+  - Level 1, Context: retrieve the relevant business context when it is needed instead of stuffing every source into one prompt. The local agent work uses a Qwen3.6 model on DGX Spark.
+  - Level 2, Agency: give the system iterative reasoning and execution loops over defined internal tools, so it can move from a question to bounded work.
+  - Level 3, Continuity: persist workflow state so the work can continue across long-running operations and restarts, with access through the messaging tools where the team already works.
+  - Level 4, System: put product, data, AI, and GTM concerns behind independently deployable services and connect them through explicit business workflows.
+  - Level 5, Authority: pair agentic behavior with RS256/JWKS signing, OAuth 2.0, Redis-backed revocation and refresh-token reuse detection, plus promotion and human-review gates where judgment or real-world action is involved.
+- Evidence should stay attached to its system: the parts platform has an approximately 1 ms indexed retrieval path, while the roughly 30% sales contribution belongs to lead-management, attribution, enrichment, ownership, integrations, and GTM automation.
+- A safe build sequence is canonical data and auth first, then retrieval, tool contracts, reasoning and execution, persistent state, messaging access, and audit or review boundaries. Describe this as a build pattern, not as a promise that every layer is public or production-proven.
+- Use the terms DGX Spark and Qwen3.6. Do not repeat "GTX Spark" or "n3.8" as facts unless they are separately verified.
 
 ## Technical toolbox
 
@@ -408,7 +478,7 @@ Reading, in more detail:
 
 - Genres: science fiction, history (with a particular interest in the Second World War and the Roman Empire), and popular science, especially books about AI and the scientific ideas behind major inventions.
 - Favourite book: The Rosie Project by Graeme Simsion.
-- Other books he has read and can discuss if asked directly: Life 3.0 (Max Tegmark), The Singularity Is Near and The Singularity Is Nearer (Ray Kurzweil), The Beginning of Infinity (David Deutsch), Deep Work (Cal Newport), Steve Jobs (Walter Isaacson), The Kite Runner (Khaled Hosseini). The full list with covers and notes is on the Reading page.
+- Other books he has read and can discuss if asked directly: Life 3.0 (Max Tegmark), The Singularity Is Near and The Singularity Is Nearer (Ray Kurzweil), The Beginning of Infinity (David Deutsch), Deep Work (Cal Newport), Steve Jobs (Walter Isaacson), The Kite Runner (Khaled Hosseini). The portfolio's public reading surface is now the Blogs page; do not promise a full book list there.
 - Do not treat this list as exhaustive of everything he has ever read. It is what has been published here, not a claim that these are the only books he has read.
 
 Boundaries that still apply:
@@ -418,6 +488,6 @@ Boundaries that still apply:
   classical music and "Idea 22" are on record; other artists, albums, eras,
   and venues are not.
 - Chess: only the platform, handle, and peak rating (and current rating, when supplied as a live note) are on record. No specific games, openings, tournaments, or opponents are established.
-- Reading: only the genres and the specific books named above are on record. Do not invent an opinion on a book beyond the one-line note already given for it on the Reading page, and do not invent additional titles.
+- Reading: only the genres and the specific books named above are on record. Do not invent an opinion on a book beyond the one-line note already given in these notes, and do not invent additional titles.
 - Do not turn an interest into a personality claim, an origin story, or a philosophy.
 - Nothing about relationships, family, health, faith, politics, finances, daily schedule, or location beyond the work locations already listed is on record.

@@ -36,7 +36,7 @@ async function loadContent(env) {
 const staticCounts = {
   projects: 10,
   experience: 3,
-  blogs: 10,
+  blogs: 8,
   books: 11,
   caseStudies: 1,
 };

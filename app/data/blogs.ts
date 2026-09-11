@@ -12,9 +12,10 @@ export type Blog = {
   note: string;
   /* surface this one on the home page */
   featured?: boolean;
-  /* "essay" is a piece to re-read; "site" is a place or tool to keep open.
-     They render in separate sections on the Reading page. */
-  kind?: "essay" | "site";
+  /* "blog" is a piece to revisit; "site" is a place or tool to keep open.
+     The database still accepts its historical "essay" value, which the
+     content reader normalizes to "blog" for the UI. */
+  kind?: "blog" | "site";
 };
 
 export type Post = {
@@ -26,13 +27,6 @@ export type Post = {
 
 /* ─── Blogs I keep coming back to ─── */
 export const favorites: Blog[] = [
-  {
-    title: "Simon Willison",
-    author: "Simon Willison",
-    url: "https://simonwillison.net",
-    note: "The clearest running log of what's real in LLMs and agents.",
-    featured: true,
-  },
   {
     title: "How to Do Great Work",
     author: "Paul Graham",
@@ -52,18 +46,13 @@ export const favorites: Blog[] = [
     author: "Aeon",
     url: "https://aeon.co/videos/artificial-creativity-is-unstoppable-grappling-with-its-ethics-is-up-to-us",
     note: "A short film on machine creativity, and why the ethics are ours to settle.",
+    featured: true,
   },
   {
     title: "Biological Evolution and Information",
     author: "Brian Potter",
     url: "https://www.construction-physics.com/p/biological-evolution-and-information",
     note: "Evolution read as an information-processing system.",
-  },
-  {
-    title: "Tensorlabbet",
-    author: "Taro Langner",
-    url: "https://tensorlabbet.com/",
-    note: "A blog of deep learnings on where AI research actually stands.",
   },
   {
     title: "My Friend Aaron",

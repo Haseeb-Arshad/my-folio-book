@@ -102,25 +102,28 @@ function CompanyLink() {
   );
 }
 
-/* ─── Selected Reading (home preview of favorite blogs) ─── */
-function SelectedReading({
+/* ─── Selected Blogs (home preview of favorite blogs) ─── */
+function SelectedBlogs({
   favorites,
 }: {
-  favorites: { title: string; author: string; url: string; note: string; featured?: boolean }[];
+  favorites: { title: string; author: string; url: string; note: string; featured?: boolean; kind?: "blog" | "site" }[];
 }) {
-  const featured = favorites.filter((b) => b.featured).slice(0, 3);
+  const featured = favorites
+    .filter((b) => b.featured && b.kind !== "site")
+    .concat(favorites.filter((b) => !b.featured && b.kind !== "site"))
+    .slice(0, 3);
 
   return (
     <section className="pb-12">
       <div className="flex items-baseline justify-between mb-5">
         <h2 className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Selected reading
+          Selected blogs
         </h2>
         <Link
           to="/reading"
           className="group flex items-center gap-1 text-[13px] text-gray-500 hover:text-gray-800 transition-colors"
         >
-          All reading
+          All blogs
           <svg
             width="13"
             height="13"
@@ -165,9 +168,6 @@ function SelectedReading({
             <p className="text-gray-500 text-[13px] leading-relaxed mt-2">
               {blog.note}
             </p>
-            <span className="text-gray-500 text-xs mt-3 block">
-              {blog.author}
-            </span>
           </a>
         ))}
       </div>
@@ -229,7 +229,7 @@ export default function Home() {
       </BlurIn>
 
       <BlurIn delay={460}>
-        <SelectedReading favorites={favorites} />
+        <SelectedBlogs favorites={favorites} />
       </BlurIn>
 
       <BlurIn delay={580}>

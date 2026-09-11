@@ -171,15 +171,24 @@ try {
   // ── blogs ───────────────────────────────────────────────────
   for (const [index, blog] of favorites.entries()) {
     await client.query(
-      `insert into public.blogs (title, author, url, note, featured, sort_order)
-       values ($1,$2,$3,$4,$5,$6)
+      `insert into public.blogs (title, author, url, note, featured, kind, sort_order)
+       values ($1,$2,$3,$4,$5,$6,$7)
        on conflict (url) do update set
          title = excluded.title,
          author = excluded.author,
          note = excluded.note,
          featured = excluded.featured,
+         kind = excluded.kind,
          sort_order = excluded.sort_order`,
-      [blog.title, blog.author, blog.url, blog.note, blog.featured ?? false, index]
+      [
+        blog.title,
+        blog.author,
+        blog.url,
+        blog.note,
+        blog.featured ?? false,
+        blog.kind === "site" ? "site" : "essay",
+        index,
+      ]
     );
   }
   counts.blogs = favorites.length;

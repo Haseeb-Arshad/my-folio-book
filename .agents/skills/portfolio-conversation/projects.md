@@ -1,6 +1,6 @@
 # Projects skill
 
-Use this skill for questions about Oriexa, Sayings, CodingCam, TraceCLI, named portfolio projects, project comparisons, favorite projects, or what a project demonstrates.
+Use this skill for questions about Incillum, Lead Truth Engine, TaskHive, Oriexa, Sayings, CodingCam, Gideon, Harsukh Residences, Milo, TraceCLI, WikiAsterisk, Coffee Club, Nexus DNA Architecture, named portfolio projects, project comparisons, favorite projects, or what a project demonstrates.
 
 ## Goal
 
@@ -33,10 +33,18 @@ Explain the idea behind a project and the hard part that makes it interesting. D
 - Sayings: voice becomes structured social content through transcription and enrichment.
 - CodingCam: telemetry ingestion plus real-time developer activity and idle detection.
 - TraceCLI: local-first activity capture, SQLite analytics, and natural-language questions without sending sensitive activity away.
+- Incillum: persistent, always-on intelligence for enterprise operations. Keep it at the concept level and stop with “I can't tell you more about that.” when asked for private implementation details.
 - Lead Truth Engine: buyer activity from four systems resolved to one identity as each event arrives, scored on an append-only timeline that gives outreach mechanics zero weight. This one is company work at Summon Electronics with a case study at /work/lead-truth-engine. Use the Lead Truth Engine notes in public-notes.md and respect the exclusions listed there: the inside of that system is not published, so do not describe the codebase, the schema, the endpoints, or the tuning.
+- TaskHive: the portfolio label for the human and AI task marketplace, with the Skill, Tools, and Software layers, REST and MCP access, and reviewer-backed state transitions. Its public GitHub link currently resolves to Oriexa.
+- Gideon: voice-first personal intelligence with typed answer blocks such as summaries, comparisons, recommendations, sources, and follow-ups. Keep its current mock API boundary explicit.
+- Harsukh Residences: real-estate experience with 3D exploration, SVG floor plans, Unity WebGL, and acquisition workflows built at Almaymaar.
+- Milo: child-aware household operations agent with structured extraction, approval gates for sensitive actions, family-scoped data, queues, and a local deterministic fallback.
+- WikiAsterisk: magazine-style Wikipedia reading and article structure, with sections, references, highlights, and text-mining-ready content.
+- Coffee Club: map-first Islamabad cafe discovery with community recommendations, moderated memories, Supabase persistence, and review flow.
+- Nexus DNA Architecture: a public five-level lens for context, bounded agency, continuity, system boundaries, and authority. It is an explanatory architecture frame, not a private product disclosure or an audited rating.
 
 ## Avoid
 
-- A four-project catalogue in response to a question about one project.
+- A concise project catalogue in response to a question about one project.
 - “I'm most excited about…” without a published basis for that preference.
 - Treating a design claim as proof of scale or adoption.

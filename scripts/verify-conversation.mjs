@@ -26,6 +26,8 @@ const topicCases = [
   ["hi", "small-talk"],
   ["What are you building right now?", "current-work"],
   ["What's Oriexa?", "projects"],
+  ["Tell me about Milo.", "projects"],
+  ["How is Nexus DNA built?", "projects"],
   ["Show me the 1 ms moment.", "technical-fit"],
   ["What did you do at REMAP AI?", "experience"],
   ["How do you handle JWT security?", "technical-fit"],
@@ -78,6 +80,41 @@ assert.doesNotMatch(currentPrompt, /## Work: REMAP AI/);
 const projectPrompt = buildConversationPrompt(message("What's Oriexa?"));
 assert.match(projectPrompt, /## Project: Oriexa/);
 assert.doesNotMatch(projectPrompt, /## Project: Sayings/);
+
+for (const [name, marker] of [
+  ["Incillum", "Project: Incillum"],
+  ["Lead Truth Engine", "Project: Lead Truth Engine"],
+  ["TaskHive", "Project: TaskHive"],
+  ["Sayings", "Project: Sayings"],
+  ["CodingCam", "Project: CodingCam"],
+  ["Gideon", "Project: Gideon"],
+  ["Harsukh Residences", "Project: Harsukh Residences"],
+  ["Milo", "Project: Milo"],
+  ["TraceCLI", "Project: TraceCLI"],
+  ["WikiAsterisk", "Project: WikiAsterisk"],
+  ["Coffee Club", "Project: Coffee Club"],
+]) {
+  const projectNotes = buildConversationPrompt(message(`Tell me about ${name}.`));
+  assert.match(projectNotes, new RegExp(`## ${marker}`));
+}
+
+const miloPrompt = buildConversationPrompt(message("Tell me about Milo."));
+assert.match(miloPrompt, /## Project: Milo/);
+assert.match(miloPrompt, /approval/i);
+assert.doesNotMatch(miloPrompt, /## Project: Oriexa/);
+
+const nexusPrompt = buildConversationPrompt(message("How is Nexus DNA built?"));
+assert.match(nexusPrompt, /## Project: Nexus DNA Architecture/);
+assert.match(nexusPrompt, /DGX Spark/);
+assert.match(nexusPrompt, /Qwen3\.6/);
+assert.match(nexusPrompt, /five-level scale/i);
+
+const incillumPrompt = buildConversationPrompt(
+  message("What can you tell me about Incillum's internals?")
+);
+assert.match(incillumPrompt, /## Project: Incillum/);
+assert.match(incillumPrompt, /I can't tell you more about that/);
+assert.doesNotMatch(incillumPrompt, /Finance operations AI coworker/);
 
 const contactPrompt = buildConversationPrompt(message("How can I reach you?"));
 assert.match(contactPrompt, /# Contact skill/);
@@ -142,4 +179,4 @@ assert.match(goblinPrompt, /supplied public notes are the only authority/);
 assert.match(goblinPrompt, /Do not use em dashes or en dashes/);
 assert.match(goblinPrompt, /## Snapshot/);
 
-console.log(`Verified ${topicCases.length + 28} conversation routing and prompt checks.`);
+console.log('Verified conversation routing and prompt checks, including all featured project note sections.');

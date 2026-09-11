@@ -55,10 +55,19 @@ const workSections = [
 ] as const;
 
 const projectSections = [
+  "Project: Incillum",
+  "Project: Lead Truth Engine",
+  "Project: TaskHive",
   "Project: Oriexa",
   "Project: Sayings",
   "Project: CodingCam",
+  "Project: Gideon",
+  "Project: Harsukh Residences",
+  "Project: Milo",
   "Project: TraceCLI",
+  "Project: WikiAsterisk",
+  "Project: Coffee Club",
+  "Project: Nexus DNA Architecture",
 ] as const;
 
 const namedSections = [
@@ -67,10 +76,24 @@ const namedSections = [
   ["trecsol", "Work: Trecsol"],
   ["almaymaar", "Work: Almaymaar"],
   ["harsukh", "Work: Almaymaar"],
+  ["incillum", "Project: Incillum"],
+  ["lead truth", "Project: Lead Truth Engine"],
+  ["taskhive", "Project: TaskHive"],
+  ["task hive", "Project: TaskHive"],
   ["oriexa", "Project: Oriexa"],
   ["sayings", "Project: Sayings"],
   ["codingcam", "Project: CodingCam"],
+  ["gideon", "Project: Gideon"],
+  ["harsukh", "Project: Harsukh Residences"],
+  ["harsukh residences", "Project: Harsukh Residences"],
+  ["milo", "Project: Milo"],
   ["tracecli", "Project: TraceCLI"],
+  ["wikiasterisk", "Project: WikiAsterisk"],
+  ["wikiasterick", "Project: WikiAsterisk"],
+  ["wiki asterisk", "Project: WikiAsterisk"],
+  ["coffee club", "Project: Coffee Club"],
+  ["nexus dna", "Project: Nexus DNA Architecture"],
+  ["nexus", "Project: Nexus DNA Architecture"],
 ] as const;
 
 function recentUserText(messages: ConversationMessage[]) {
@@ -127,7 +150,7 @@ export function selectConversationTopic(messages: ConversationMessage[]): TopicS
     return { topic: "current-work", searchText };
   }
 
-  if (/\b(oriexa|sayings|codingcam|tracecli|project|side project|portfolio build)\b/i.test(searchText)) {
+  if (/\b(incillum|lead truth|task[- ]?hive|oriexa|sayings|codingcam|tracecli|gideon|harsukh|milo|wiki[- ]?asterisk|wiki[- ]?asterick|coffee club|nexus|project|side project|portfolio build)\b/i.test(searchText)) {
     return { topic: "projects", searchText };
   }
 
@@ -193,6 +216,9 @@ function technicalEvidenceSections(searchText: string) {
   if (/\b(devops|deploy|docker|kubernetes|ci\/cd|github actions|uptime|digitalocean|linux|cloud)\b/i.test(searchText)) {
     sections.push("Work: Summon Electronics", "Work: REMAP AI");
   }
+  if (/\b(nexus|dna|dgx spark|qwen3\.6)\b/i.test(searchText)) {
+    sections.push("Project: Nexus DNA Architecture", "Work: Summon Electronics");
+  }
 
   return sections.length > 0
     ? unique(sections)
@@ -212,7 +238,7 @@ export function selectPublicNoteSections(selection: TopicSelection) {
       sections = ["Identity and contact"];
       break;
     case "current-work":
-      sections = [...base, "Work: Summon Electronics"];
+      sections = [...base, "Work: Summon Electronics", "Project: Incillum"];
       break;
     case "projects": {
       const named = namedNoteSections(searchText).filter((section) => section.startsWith("Project:"));

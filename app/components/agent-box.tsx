@@ -135,7 +135,8 @@ export const generalAgent: AgentBoxConfig = {
   ],
 };
 
-/* Foot of the résumé. The openers point at the document above them. */
+/* Foot of the résumé. Keep the same lively entry points as the home agent,
+   so the CV page feels like the same conversation rather than a reduced mode. */
 export const cvAgent: AgentBoxConfig = {
   inputId: "ask-cv",
   heading: "Ask my agent anything :)",
@@ -147,20 +148,20 @@ export const cvAgent: AgentBoxConfig = {
   surface: "resume",
   prompts: [
     {
-      label: "Find the 1 ms culprit",
-      value: "What is the 1 ms retrieval in your work, and how did you get there?",
+      label: "Which bit fought back?",
+      value: "What is the hardest engineering problem you've worked through?",
     },
     {
-      label: "Which bit fought back?",
-      value: "What is the hardest systems problem in your work?",
+      label: "Where's the clever bit?",
+      value: "Which project best shows your systems thinking, and why?",
     },
     {
       label: "What must stay human?",
       value: "What do you refuse to automate?",
     },
     {
-      label: "Where's the clever bit?",
-      value: "Which project best shows your systems thinking, and why?",
+      label: "What happens off the clock?",
+      value: "What do you do when you're not working?",
     },
   ],
 };
