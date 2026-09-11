@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: haseeb-portfolio
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: PORTFOLIO_OPENROUTER_API_KEY
+        sync: false
+      - key: PORTFOLIO_OPENROUTER_MODEL
+        value: openai/gpt-4.1-mini
+      - key: PORTFOLIO_SITE_URL
+        value: https://haseebarshad.me
+      - key: VITE_POSTHOG_PROJECT_TOKEN
+        sync: false
+      - key: VITE_POSTHOG_API_HOST
+        value: https://us.i.posthog.com
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
