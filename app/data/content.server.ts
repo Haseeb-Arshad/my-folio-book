@@ -1,4 +1,5 @@
 import { supabaseServer } from "../lib/supabase.server";
+import { productStories } from "./project-stories";
 import { projects as staticProjects, type Project } from "./projects";
 import { experience as staticExperience, type Experience } from "./experience";
 import {
@@ -40,8 +41,12 @@ const HIDDEN_BLOG_URLS = new Set([
 const HIDDEN_BLOG_TITLES = new Set(["simon willison", "tensorlabbet"]);
 
 function isVisibleBlog(row: Record<string, any>) {
-  const url = String(row.url ?? "").replace(/\/+$/, "").toLowerCase();
-  const title = String(row.title ?? "").trim().toLowerCase();
+  const url = String(row.url ?? "")
+    .replace(/\/+$/, "")
+    .toLowerCase();
+  const title = String(row.title ?? "")
+    .trim()
+    .toLowerCase();
   return !HIDDEN_BLOG_URLS.has(url) && !HIDDEN_BLOG_TITLES.has(title);
 }
 
@@ -62,21 +67,23 @@ async function read<T>(key: string, load: () => Promise<T>, fallback: T) {
   } catch (error) {
     console.error(
       `[content] ${key} fell back to static data:`,
-      error instanceof Error ? error.message : error
+      error instanceof Error ? error.message : error,
     );
     return fallback;
   }
 }
 
 /** Supabase returns { data, error }; make the error a throw so `read` catches it. */
-async function rows<T>(query: PromiseLike<{ data: T[] | null; error: unknown }>) {
+async function rows<T>(
+  query: PromiseLike<{ data: T[] | null; error: unknown }>,
+) {
   const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
 
 export async function getProjects(): Promise<Project[]> {
-  return read(
+  const projects = await read(
     "projects",
     async () => {
       const data = await rows(
@@ -84,7 +91,7 @@ export async function getProjects(): Promise<Project[]> {
           .from("projects")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       if (data.length === 0) return staticProjects;
 
@@ -93,9 +100,10 @@ export async function getProjects(): Promise<Project[]> {
           row.popup_image && row.popup_description
             ? { image: row.popup_image, description: row.popup_description }
             : undefined;
-        const links = Array.isArray(row.links) && row.links.length > 0
-          ? (row.links as { label: string; href: string }[])
-          : undefined;
+        const links =
+          Array.isArray(row.links) && row.links.length > 0
+            ? (row.links as { label: string; href: string }[])
+            : undefined;
 
         return {
           name: row.name,
@@ -113,8 +121,16 @@ export async function getProjects(): Promise<Project[]> {
         };
       });
     },
-    staticProjects
+    staticProjects,
   );
+  // The new editorial entry ships with the site before the CMS is seeded.
+  // Preserve all existing CMS rows and their ordering, including older Gideon.
+  const chatGideon = staticProjects.find(
+    (project) => project.name === "ChatGideon",
+  )!;
+  return projects.some((project) => project.name === chatGideon.name)
+    ? projects
+    : [chatGideon, ...projects];
 }
 
 export async function getExperience(): Promise<Experience[]> {
@@ -126,20 +142,22 @@ export async function getExperience(): Promise<Experience[]> {
           .from("experience")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       if (data.length === 0) return staticExperience;
 
-      return data.map((row: Record<string, any>): Experience => ({
-        role: row.role,
-        org: row.org,
-        year: row.year,
-        summary: row.summary,
-        stack: row.stack ?? [],
-        bullets: row.bullets ?? [],
-      }));
+      return data.map(
+        (row: Record<string, any>): Experience => ({
+          role: row.role,
+          org: row.org,
+          year: row.year,
+          summary: row.summary,
+          stack: row.stack ?? [],
+          bullets: row.bullets ?? [],
+        }),
+      );
     },
-    staticExperience
+    staticExperience,
   );
 }
 
@@ -149,7 +167,7 @@ export async function getExperience(): Promise<Experience[]> {
  * copy is the fallback, so the page still renders with no credentials.
  */
 export async function getCaseStudies(): Promise<CaseStudy[]> {
-  return read(
+  const studies = await read(
     "case_studies",
     async () => {
       const data = await rows(
@@ -157,29 +175,41 @@ export async function getCaseStudies(): Promise<CaseStudy[]> {
           .from("case_studies")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       if (data.length === 0) return staticCaseStudies;
 
-      return data.map((row: Record<string, any>): CaseStudy => ({
-        slug: row.slug,
-        title: row.title,
-        summary: row.summary,
-        org: row.org,
-        role: row.role,
-        team: row.team,
-        stack: row.stack ?? [],
-        scope: row.scope,
-        excerpt: row.excerpt,
-        sections: (row.sections ?? []) as CaseStudySection[],
-        provenance: row.provenance ?? "",
-      }));
+      return data.map(
+        (row: Record<string, any>): CaseStudy => ({
+          slug: row.slug,
+          title: row.title,
+          summary: row.summary,
+          org: row.org,
+          role: row.role,
+          team: row.team,
+          stack: row.stack ?? [],
+          scope: row.scope,
+          excerpt: row.excerpt,
+          sections: (row.sections ?? []) as CaseStudySection[],
+          provenance: row.provenance ?? "",
+        }),
+      );
     },
-    staticCaseStudies
+    staticCaseStudies,
   );
+  // These product overviews are release-owned content, not employer CMS drafts.
+  // Their media references ship atomically with the application.
+  return [
+    ...studies.filter(
+      (study) => !productStories.some((product) => product.slug === study.slug),
+    ),
+    ...productStories,
+  ];
 }
 
-export async function getCaseStudy(slug: string): Promise<CaseStudy | undefined> {
+export async function getCaseStudy(
+  slug: string,
+): Promise<CaseStudy | undefined> {
   const all = await getCaseStudies();
   return all.find((study) => study.slug === slug);
 }
@@ -203,21 +233,23 @@ export async function getBlogs(): Promise<Blog[]> {
           .from("blogs")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       const visible = data.filter(isVisibleBlog);
       if (visible.length === 0) return staticFavorites;
 
-      return visible.map((row: Record<string, any>): Blog => ({
-        title: row.title,
-        author: row.author,
-        url: row.url,
-        note: row.note,
-        featured: row.featured ?? false,
-        kind: row.kind === "site" ? "site" : "blog",
-      }));
+      return visible.map(
+        (row: Record<string, any>): Blog => ({
+          title: row.title,
+          author: row.author,
+          url: row.url,
+          note: row.note,
+          featured: row.featured ?? false,
+          kind: row.kind === "site" ? "site" : "blog",
+        }),
+      );
     },
-    staticFavorites
+    staticFavorites,
   );
 }
 
@@ -230,18 +262,20 @@ export async function getPosts(): Promise<Post[]> {
           .from("posts")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       /* Unlike the others an empty result is meaningful here: nothing is
          published yet. Do not fall back. */
-      return data.map((row: Record<string, any>): Post => ({
-        title: row.title,
-        date: row.label,
-        url: row.url,
-        summary: row.summary,
-      }));
+      return data.map(
+        (row: Record<string, any>): Post => ({
+          title: row.title,
+          date: row.label,
+          url: row.url,
+          summary: row.summary,
+        }),
+      );
     },
-    staticPosts
+    staticPosts,
   );
 }
 
@@ -254,20 +288,22 @@ export async function getBooks(): Promise<Book[]> {
           .from("books")
           .select("*")
           .eq("published", true)
-          .order("sort_order", { ascending: true })
+          .order("sort_order", { ascending: true }),
       );
       if (data.length === 0) return staticBooks;
 
-      return data.map((row: Record<string, any>): Book => ({
-        title: row.title,
-        author: row.author,
-        isbn13: row.isbn13 ?? undefined,
-        genres: row.genres ?? [],
-        note: row.note,
-        favorite: row.favorite ?? false,
-      }));
+      return data.map(
+        (row: Record<string, any>): Book => ({
+          title: row.title,
+          author: row.author,
+          isbn13: row.isbn13 ?? undefined,
+          genres: row.genres ?? [],
+          note: row.note,
+          favorite: row.favorite ?? false,
+        }),
+      );
     },
-    staticBooks
+    staticBooks,
   );
 }
 
@@ -302,13 +338,15 @@ export async function getLiveNotes(): Promise<LiveNote[]> {
           .select("label,value")
           .eq("published", true)
           .order("sort_order", { ascending: true })
-          .limit(12)
+          .limit(12),
       );
-      return data.map((row: Record<string, any>): LiveNote => ({
-        label: row.label,
-        value: row.value,
-      }));
+      return data.map(
+        (row: Record<string, any>): LiveNote => ({
+          label: row.label,
+          value: row.value,
+        }),
+      );
     },
-    []
+    [],
   );
 }

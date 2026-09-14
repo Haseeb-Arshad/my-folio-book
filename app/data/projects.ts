@@ -27,6 +27,20 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    name: "ChatGideon",
+    tagline:
+      "A voice presence built around the flow of conversation. Speak or type, follow the answer on screen, and inspect the timing behind each turn.",
+    year: "2026",
+    stack: ["React", "TypeScript", "Realtime Voice", "WebSocket"],
+    live: "https://chatgideon.com",
+    code: "/work/chatgideon",
+    logo: "/logos/chatgideon.png",
+    letter: "G",
+    color: "bg-slate-900",
+    status: "building",
+    links: [{ label: "Explore project", href: "/work/chatgideon" }],
+  },
+  {
     name: "Incillum",
     tagline:
       "Persistent intelligence for enterprise operations. An AI system built to carry context, decisions and responsibility across long-running business work, acting within defined authority and bringing people in where judgment is required.",
@@ -146,7 +160,10 @@ export const projects: Project[] = [
     letter: "T",
     color: "bg-zinc-700",
     links: [
-      { label: "npm pkg", href: "https://github.com/Haseeb-Arshad/tracecli-npm" },
+      {
+        label: "npm pkg",
+        href: "https://github.com/Haseeb-Arshad/tracecli-npm",
+      },
       { label: "pip pkg", href: "https://github.com/Haseeb-Arshad/trace-cli" },
     ],
   },

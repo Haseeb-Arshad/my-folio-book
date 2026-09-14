@@ -1,13 +1,11 @@
-import { useState, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
-import { BlurIn } from "../components/header";
-import BuildingStatus from "../components/building-status";
-import { type Project } from "../data/projects";
 import {
   getProjects,
   getExperience,
   getCaseStudiesByOrg,
 } from "../data/content.server";
+import { presentations } from "../data/project-stories";
+import type { Project } from "../data/projects";
 
 export async function loader() {
   const [projects, experience, byOrg] = await Promise.all([
@@ -15,350 +13,234 @@ export async function loader() {
     getExperience(),
     getCaseStudiesByOrg(),
   ]);
-
-  /* A Map does not survive the loader boundary, so hand the route a plain
-     object keyed by org with only the fields the card needs. */
   const caseStudies = Object.fromEntries(
     [...byOrg].map(([org, studies]) => [
       org,
-      studies.map((s) => ({ slug: s.slug, title: s.title })),
-    ])
+      studies.map(({ slug, title }) => ({ slug, title })),
+    ]),
   );
-
   return { projects, experience, caseStudies };
 }
-
 export function meta() {
   return [
     { title: "Work · Haseeb Arshad" },
     {
       name: "description",
-      content: "Selected projects: AI, agentic systems, and full-stack craft.",
+      content:
+        "Explore Incillum, ChatGideon and selected engineering work through visual walkthroughs and case studies.",
     },
   ];
 }
-
-/* Case-study routes live on this site, so they must not open in a new tab
-   or lose client-side navigation. */
-const isInternal = (href: string) => href.startsWith("/");
-
-/* ─── tiny link with arrow ─── */
 function ProjectLink({
   href,
-  label,
-  external,
+  children,
 }: {
   href: string;
-  label: string;
-  external?: boolean;
+  children: React.ReactNode;
 }) {
-  const internal = isInternal(href);
-  const arrow = (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      className="opacity-50 group-hover/link:opacity-100 group-hover/link:-translate-y-0.5 group-hover/link:translate-x-0.5 transition-all duration-200 ease-out"
-    >
-      {external && !internal ? (
-        <path d="M7 17L17 7M17 7H8M17 7v9" />
-      ) : (
-        <path d="M5 12h14M12 5l7 7-7 7" />
-      )}
-    </svg>
-  );
-  const className =
-    "group/link inline-flex items-center gap-1 text-[13px] text-gray-500 hover:text-gray-900 transition-colors";
-
-  if (internal) {
-    return (
-      <Link
-        to={href}
-        onClick={(e) => e.stopPropagation()}
-        className={className}
-      >
-        {label}
-        {arrow}
-      </Link>
-    );
-  }
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={(e) => e.stopPropagation()}
-      className={className}
-    >
-      {label}
-      {arrow}
+  return href.startsWith("/") ? (
+    <Link to={href}>{children}</Link>
+  ) : (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
     </a>
   );
 }
-
-/* ─── Project card (with optional Summon-style hover preview) ─── */
-function ProjectCard({ p }: { p: Project }) {
-  const [showPreview, setShowPreview] = useState(false);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const primary = p.live ?? p.code;
-  const hasPreview = Boolean(p.popup);
-
-  const handleEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setShowPreview(true);
-  };
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => setShowPreview(false), 250);
-  };
-
+function MoreProject({ project }: { project: Project }) {
+  const primary = project.live ?? project.code;
   return (
-    <div
-      className="relative"
-      onMouseEnter={hasPreview ? handleEnter : undefined}
-      onMouseLeave={hasPreview ? handleLeave : undefined}
-    >
-      {/* Not an anchor. The title below carries the link and stretches an
-          overlay across the whole card, which keeps the card clickable
-          without nesting anchors inside it. */}
-      <div className="group relative rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1">
-        <div className="flex items-start gap-4">
-          {p.logo ? (
-            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
-              <img
-                src={p.logo}
-                alt={`${p.name} logo`}
-                className="w-full h-full object-contain p-1"
-              />
-            </div>
-          ) : (
-            <div
-              className={`w-10 h-10 shrink-0 ${p.color} rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm`}
-            >
-              {p.letter}
-            </div>
-          )}
-
-          <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
-                  {isInternal(primary) ? (
-                    <Link
-                      to={primary}
-                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                    >
-                      {p.name}
-                    </Link>
-                  ) : (
-                    <a
-                      href={primary}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                    >
-                      {p.name}
-                    </a>
-                  )}
-                </h3>
-                {p.status === "building" && (
-                  <BuildingStatus label="Building" logo={p.logo} />
-                )}
-              </div>
-              <span className="text-gray-400 text-xs shrink-0 font-mono">
-                {p.year}
-              </span>
-            </div>
-
-            <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">
-              {p.tagline}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-1.5 mt-3">
-              {p.stack.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="relative z-10 flex flex-wrap items-center gap-4 mt-4">
-              {p.live && <ProjectLink href={p.live} label="Live" external />}
-              {p.links ? (
-                p.links.map((l) => (
-                  <ProjectLink
-                    key={l.href}
-                    href={l.href}
-                    label={l.label}
-                    external
-                  />
-                ))
-              ) : p.code !== p.live ? (
-                /* Company work and closed source have no repository to show, so
-                   `code` is set to the live URL. A "Code" link pointing at the
-                   product's own site would be calling a marketing page source. */
-                <ProjectLink href={p.code} label="Code" external />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* hover preview — image + blurb from the live site */}
-      {hasPreview && showPreview && p.popup && (
-        <div className="absolute top-full right-4 mt-1 z-50 animate-video-in pointer-events-none">
-          <div className="w-[360px] rounded-xl overflow-hidden shadow-2xl border border-gray-800 bg-black">
+    <article className="more-project">
+      {project.popup && (
+        <ProjectLink href={primary}>
+          <div className="more-project-image">
             <img
-              src={p.popup.image}
-              alt={`${p.name} preview`}
+              src={project.popup.image}
+              alt={`${project.name} interface preview`}
               loading="lazy"
-              className="w-full h-auto block"
             />
-            <p className="text-[12px] text-gray-300 leading-relaxed p-3.5">
-              {p.popup.description}
-            </p>
           </div>
-        </div>
+        </ProjectLink>
       )}
-    </div>
-  );
-}
-
-export default function Work() {
-  const { projects, experience, caseStudies } = useLoaderData<typeof loader>();
-
-  return (
-    <section className="pb-24">
-      <BlurIn>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">Work</h2>
-        <p className="text-gray-500 text-sm mb-8 border-b border-gray-100 pb-6">
-          Principal engineering across AI systems, agentic products, and
-          full-stack craft.
-        </p>
-      </BlurIn>
-
-      {/* ─── Experience ─── */}
-      <BlurIn delay={60}>
-        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
-          Experience
+      <div className="more-project-title">
+        {project.logo && (
+          <img src={project.logo} alt="" width={30} height={30} />
+        )}
+        <h3>
+          <ProjectLink href={primary}>
+            {project.name} <span aria-hidden="true">↗</span>
+          </ProjectLink>
         </h3>
-      </BlurIn>
-
-      {experience.map((job, i) => (
-        <BlurIn key={job.org} delay={120 + i * 90}>
-          <div className="rounded-2xl border border-gray-100 p-6 mb-3">
-            <div className="flex items-baseline justify-between gap-3 flex-wrap">
-              <h4 className="text-gray-900 font-semibold text-[15px]">
-                {job.role}
-              </h4>
-              <span className="text-gray-400 text-xs shrink-0 font-mono">
-                {job.year}
-              </span>
-            </div>
-            <p className="text-gray-600 text-sm mt-1 font-medium">{job.org}</p>
-
-            <p className="text-gray-500 text-sm mt-3 leading-relaxed">
-              {job.summary}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-1.5 mt-4">
-              {job.stack.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <ul className="mt-5 flex flex-col gap-2.5 border-t border-gray-100 pt-5">
-              {job.bullets.map((b, bi) => (
-                <li key={bi} className="flex gap-3 text-sm text-gray-600 leading-relaxed">
-                  <span className="mt-[7px] w-1 h-1 rounded-full bg-gray-300 shrink-0" />
-                  <span>{b}</span>
-                </li>
-              ))}
-            </ul>
-
-            {/* Deep-dives on systems built inside this role. */}
-            {(caseStudies[job.org] ?? []).length > 0 && (
-              <div className="mt-5 border-t border-gray-100 pt-5">
-                <h5 className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  Case studies
-                </h5>
-                <div className="mt-3 flex flex-col gap-2">
-                  {caseStudies[job.org].map((study) => (
-                    <Link
-                      key={study.slug}
-                      to={`/work/${study.slug}`}
-                      className="group/cs inline-flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 transition-colors w-fit"
-                    >
-                      <span className="underline underline-offset-2 decoration-gray-300 group-hover/cs:decoration-gray-900 transition-colors">
-                        {study.title}
-                      </span>
-                      <svg
-                        width="13"
-                        height="13"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="opacity-50 group-hover/cs:opacity-100 group-hover/cs:translate-x-0.5 transition-all duration-200 ease-out"
-                      >
-                        <path d="M5 12h14M12 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </BlurIn>
-      ))}
-
-      {/* ─── Projects ─── */}
-      <BlurIn delay={200}>
-        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mt-12 mb-4">
-          Projects
-        </h3>
-      </BlurIn>
-
-      <div className="flex flex-col gap-2">
-        {projects.map((p, i) => (
-          <BlurIn key={p.name} delay={80 + i * 90}>
-            <ProjectCard p={p} />
-          </BlurIn>
+        <span>{project.year}</span>
+      </div>
+      <p>{project.tagline}</p>
+      <div className="project-tags">
+        {project.stack.map((tag) => (
+          <span key={tag}>{tag}</span>
         ))}
       </div>
-
-      <BlurIn delay={80 + projects.length * 90}>
+      <div className="project-links">
+        {project.live && (
+          <ProjectLink href={project.live}>Visit site ↗</ProjectLink>
+        )}
+        {project.links
+          ? project.links.map((link) => (
+              <ProjectLink key={link.href} href={link.href}>
+                {link.label} ↗
+              </ProjectLink>
+            ))
+          : project.code !== project.live && (
+              <ProjectLink href={project.code}>View project ↗</ProjectLink>
+            )}
+      </div>
+    </article>
+  );
+}
+export default function Work() {
+  const { projects, experience, caseStudies } = useLoaderData<typeof loader>();
+  const featured = Object.entries(presentations).filter(([name]) =>
+    projects.some((project) => project.name === name),
+  );
+  return (
+    <section className="work-showcase">
+      <header className="work-intro">
+        <span className="eyebrow">Selected work</span>
+        <h1>
+          Ideas, made <em>tangible.</em>
+        </h1>
+        <p>
+          AI systems, thoughtful interfaces, and the engineering that makes them
+          work. A closer look at what I build.
+        </p>
+        <a href="#selected">
+          Explore the work <span aria-hidden="true">↓</span>
+        </a>
+      </header>
+      <div id="selected" className="featured-projects">
+        {featured.map(([name, presentation], index) => (
+          <article
+            className={`featured-project tone-${presentation.tone}`}
+            key={name}
+          >
+            <div className="featured-heading">
+              <div className="project-brand">
+                {presentation.logo && (
+                  <img
+                    src={presentation.logo}
+                    alt={`${name} logo`}
+                    width={48}
+                    height={48}
+                  />
+                )}
+                <span>{name}</span>
+              </div>
+              <span className="project-index">
+                {String(index + 1).padStart(2, "0")} / {presentation.category}
+              </span>
+            </div>
+            <Link
+              to={`/work/${presentation.slug}`}
+              className="featured-image"
+              aria-label={`Explore ${name}`}
+            >
+              <img
+                src={presentation.cover}
+                alt={presentation.alt}
+                loading={index === 0 ? "eager" : "lazy"}
+                decoding="async"
+              />
+              <span className="featured-image-link" aria-hidden="true">
+                Explore project ↗
+              </span>
+            </Link>
+            <div className="featured-body">
+              <div>
+                <span className="eyebrow">{presentation.category}</span>
+                <h2>
+                  <Link to={`/work/${presentation.slug}`}>
+                    {presentation.headline}
+                  </Link>
+                </h2>
+                <p>{presentation.description}</p>
+              </div>
+              <div className="featured-details">
+                <span className="project-status">{presentation.status}</span>
+                <dl>
+                  {presentation.facts.map((fact) => (
+                    <div key={fact.label}>
+                      <dt>{fact.label}</dt>
+                      <dd>{fact.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <Link to={`/work/${presentation.slug}`} className="story-link">
+                  Explore {name} <span aria-hidden="true">↗</span>
+                </Link>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <section className="other-work" aria-labelledby="more-work">
+        <div className="section-heading">
+          <span className="eyebrow">More to explore</span>
+          <h2 id="more-work">Other things I've built.</h2>
+        </div>
+        <div className="more-project-grid">
+          {projects
+            .filter((project) => !presentations[project.name])
+            .map((project) => (
+              <MoreProject key={project.name} project={project} />
+            ))}
+        </div>
         <a
+          className="story-link"
           href="https://github.com/Haseeb-Arshad"
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mt-8"
         >
-          More on GitHub
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="opacity-50 group-hover:translate-x-0.5 transition-transform duration-200 ease-out"
-          >
-            <path d="M5 12h14M12 5l7 7-7 7" />
-          </svg>
+          More on GitHub ↗
         </a>
-      </BlurIn>
+      </section>
+      <section className="work-experience" aria-labelledby="experience">
+        <div className="section-heading">
+          <span className="eyebrow">The background</span>
+          <h2 id="experience">Where I've worked.</h2>
+        </div>
+        {experience.map((job) => (
+          <article className="experience-row" key={job.org}>
+            <div>
+              <span className="eyebrow">{job.year}</span>
+              <h3>{job.org}</h3>
+              <p>{job.role}</p>
+            </div>
+            <div>
+              <p>{job.summary}</p>
+              <details>
+                <summary>Responsibilities and work</summary>
+                <ul>
+                  {job.bullets.map((bullet) => (
+                    <li key={bullet}>{bullet}</li>
+                  ))}
+                </ul>
+                <div className="project-tags">
+                  {job.stack.map((tag) => (
+                    <span key={tag}>{tag}</span>
+                  ))}
+                </div>
+              </details>
+              {(caseStudies[job.org] ?? []).map((study) => (
+                <Link
+                  className="story-link"
+                  key={study.slug}
+                  to={`/work/${study.slug}`}
+                >
+                  {study.title} ↗
+                </Link>
+              ))}
+            </div>
+          </article>
+        ))}
+      </section>
     </section>
   );
 }

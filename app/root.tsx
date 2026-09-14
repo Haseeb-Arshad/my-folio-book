@@ -62,7 +62,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      <main className="max-w-[980px] mx-auto px-6">
+      <main
+        className={`${location.pathname.startsWith("/work") ? "max-w-[1200px]" : "max-w-[980px]"} mx-auto px-6`}
+      >
         {!isHome && (
           <div className="animate-blur-in">
             <Nav />
