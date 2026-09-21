@@ -291,11 +291,13 @@ function UsagePanel({
     >
       <header className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-3">
-          <span
-            className="h-3 w-3 rounded-full"
-            style={{ backgroundColor: (PALETTES[provider.id] ?? PALETTES.all)[4] }}
-            aria-hidden="true"
-          />
+          {!compact && (
+            <span
+              className="h-3 w-3 rounded-full"
+              style={{ backgroundColor: (PALETTES[provider.id] ?? PALETTES.all)[4] }}
+              aria-hidden="true"
+            />
+          )}
           <div>
             {!compact && (
               <p className="text-[10px] uppercase tracking-[0.15em] text-gray-400">
