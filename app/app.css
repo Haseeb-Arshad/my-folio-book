@@ -63,6 +63,105 @@ body {
   display: none;
 }
 
+/* ── AI usage heatmap ────────────────────────────────────────
+   The grid keeps its data density on small screens and lets the user
+   horizontally inspect the year rather than collapsing into unreadable dots. */
+.ai-usage-panel {
+  border-top: 1px solid rgb(243 244 246);
+  padding: 2rem 0 2.5rem;
+}
+
+.ai-usage-panel--summary {
+  border-top-color: rgb(229 231 235);
+  padding-top: 1.5rem;
+}
+
+.ai-usage-calendar-wrap {
+  overflow-x: auto;
+  margin: 2rem -0.25rem 0;
+  padding: 0 0.25rem 0.25rem;
+  outline: none;
+}
+
+.ai-usage-calendar-wrap:focus-visible {
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 2px rgb(17 24 39 / 0.15);
+}
+
+.ai-usage-calendar {
+  min-width: 760px;
+}
+
+.ai-usage-calendar__months {
+  display: grid;
+  min-width: 760px;
+  margin-left: 2.9rem;
+  gap: 3px;
+  color: rgb(156 163 175);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.ai-usage-calendar__months span {
+  min-width: 0;
+}
+
+.ai-usage-calendar__body {
+  display: grid;
+  min-width: 760px;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.ai-usage-calendar__day-labels {
+  display: grid;
+  grid-template-rows: repeat(7, minmax(10px, 1fr));
+  gap: 3px;
+  color: rgb(156 163 175);
+  font-size: 10px;
+  line-height: 1;
+}
+
+.ai-usage-calendar__day-labels span {
+  display: flex;
+  align-items: center;
+}
+
+.ai-usage-calendar__cells {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 3px;
+}
+
+.ai-usage-cell {
+  display: block;
+  min-width: 10px;
+  min-height: 10px;
+  border-radius: 4px;
+  background: rgb(243 244 246);
+}
+
+.ai-usage-cell[data-level="1"] {
+  background: var(--ai-usage-accent);
+  opacity: 0.18;
+}
+
+.ai-usage-cell[data-level="2"] {
+  background: var(--ai-usage-accent);
+  opacity: 0.36;
+}
+
+.ai-usage-cell[data-level="3"] {
+  background: var(--ai-usage-accent);
+  opacity: 0.62;
+}
+
+.ai-usage-cell[data-level="4"] {
+  background: var(--ai-usage-accent);
+  opacity: 0.96;
+}
+
 ::selection {
   @apply bg-gray-900 text-white;
 }

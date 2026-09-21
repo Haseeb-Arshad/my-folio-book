@@ -1,0 +1,15 @@
+name = "haseeb-ai-usage"
+main = "src/index.ts"
+compatibility_date = "2026-09-20"
+workers_dev = true
+
+[vars]
+AI_USAGE_ALLOWED_ORIGIN = "https://haseebarshad.me"
+
+[secrets]
+required = ["AI_USAGE_SYNC_TOKEN"]
+
+[[kv_namespaces]]
+binding = "AI_USAGE"
+id = "a50436e5e6e7478599f2056d429226c8"
+preview_id = "d81d6457b2774a6a97d2a1e890303ccd"

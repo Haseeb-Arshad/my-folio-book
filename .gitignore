@@ -9,3 +9,5 @@
 /build/
 /\.playwright-cli/
 /output/playwright/
+/outputs/ai-usage/
+/workers/ai-usage/.dev.vars

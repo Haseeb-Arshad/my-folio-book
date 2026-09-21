@@ -4,13 +4,16 @@ import type { Route } from "./+types/home";
 import { Nav, BlurIn } from "../components/header";
 import AgentBox, { generalAgent } from "../components/agent-box";
 import { getBlogs, projectLinksFrom } from "../data/content.server";
+import AiUsage from "../components/ai-usage";
+import { getAiUsageSnapshot } from "../data/ai-usage.server";
 
 export async function loader() {
-  const [favorites, projectLinks] = await Promise.all([
+  const [favorites, projectLinks, aiUsage] = await Promise.all([
     getBlogs(),
     projectLinksFrom(),
+    getAiUsageSnapshot(),
   ]);
-  return { favorites, projectLinks };
+  return { favorites, projectLinks, aiUsage };
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -176,7 +179,7 @@ function SelectedBlogs({
 }
 
 export default function Home() {
-  const { favorites, projectLinks } = useLoaderData<typeof loader>();
+  const { favorites, projectLinks, aiUsage } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -234,6 +237,10 @@ export default function Home() {
 
       <BlurIn delay={580}>
         <AgentBox config={generalAgent} projectLinks={projectLinks} />
+      </BlurIn>
+
+      <BlurIn delay={700}>
+        <AiUsage snapshot={aiUsage} />
       </BlurIn>
     </>
   );

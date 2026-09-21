@@ -9,6 +9,8 @@
     "typecheck": "react-router typegen && tsc",
     "verify:conversation": "node scripts/verify-conversation.mjs",
     "verify:conversation:live": "node scripts/live-conversation-check.mjs",
+    "stats:publish": "node scripts/publish-ai-usage.mjs",
+    "stats:publish:dry": "node scripts/publish-ai-usage.mjs --dry-run",
     "db:migrate": "node scripts/supabase-migrate.mjs",
     "db:seed": "node scripts/supabase-seed.mjs",
     "verify:content": "node scripts/verify-content-fallback.mjs"
