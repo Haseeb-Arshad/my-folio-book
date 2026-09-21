@@ -297,11 +297,13 @@ function UsagePanel({
             aria-hidden="true"
           />
           <div>
-            <p className="text-[10px] uppercase tracking-[0.15em] text-gray-400">
-              {compact ? "Across all coding agents" : "Coding activity"}
-            </p>
+            {!compact && (
+              <p className="text-[10px] uppercase tracking-[0.15em] text-gray-400">
+                Coding activity
+              </p>
+            )}
             <h3 className="mt-1 text-[1.55rem] font-medium tracking-tight text-gray-900">
-              {compact ? "Tokens consumed" : providerLabel(provider)}
+              {compact ? "Across my toolkit" : providerLabel(provider)}
             </h3>
           </div>
         </div>
@@ -386,7 +388,7 @@ export default function AiUsage({
             AI usage
           </p>
           <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-gray-500">
-            A year of building with AI.
+            A rolling snapshot of the tools I use to think, build, and ship.
           </p>
         </div>
 
