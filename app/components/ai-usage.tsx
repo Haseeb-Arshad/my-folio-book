@@ -185,14 +185,14 @@ function Heatmap({
         style={
           {
             "--ai-usage-accent": provider.color,
-            minWidth: 560,
+            minWidth: 500,
           } as React.CSSProperties
         }
       >
         <div
           className="ai-usage-calendar__months"
           style={{
-            minWidth: 560,
+            minWidth: 0,
             gridTemplateColumns:
               "repeat(" + calendar.columns + ", minmax(6px, 1fr))",
           }}
@@ -208,7 +208,7 @@ function Heatmap({
           ))}
         </div>
 
-        <div className="ai-usage-calendar__body" style={{ minWidth: 560 }}>
+        <div className="ai-usage-calendar__body" style={{ minWidth: 0 }}>
           <div className="ai-usage-calendar__day-labels" aria-hidden="true">
             {DAY_LABELS.map((label, index) => (
               <span key={index}>{label}</span>
@@ -218,7 +218,7 @@ function Heatmap({
           <div
             className="ai-usage-calendar__cells"
             style={{
-              gridTemplateRows: "repeat(7, minmax(10px, 1fr))",
+              gridTemplateRows: "repeat(7, minmax(6px, 1fr))",
               gridTemplateColumns:
                 "repeat(" + calendar.columns + ", minmax(6px, 1fr))",
             }}
@@ -237,7 +237,7 @@ function Heatmap({
                 key={day.date}
                 className="ai-usage-cell"
                 disabled={day.date < range.start || day.date > range.end}
-                style={{ backgroundColor: palette[day.level], opacity: day.date < range.start || day.date > range.end ? 0 : 1, border: 0, padding: 0, minWidth: 6, cursor: "pointer", aspectRatio: "1" }}
+                style={{ backgroundColor: palette[day.level], opacity: day.date < range.start || day.date > range.end ? 0 : 1, border: 0, padding: 0, minWidth: 6, minHeight: 6, borderRadius: 2, cursor: "pointer", aspectRatio: "1" }}
                 onMouseEnter={() => setActiveDay(day.date)}
                 onFocus={() => setActiveDay(day.date)}
                 onClick={() => setActiveDay(day.date)}
