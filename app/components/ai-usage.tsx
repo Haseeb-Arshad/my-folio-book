@@ -7,6 +7,14 @@ import {
 } from "../data/ai-usage";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const PALETTES: Record<string, string[]> = {
+  all: ["#f0f4f2", "#cce4d8", "#8cc5aa", "#429575", "#21634c"],
+  claude: ["#fff6ed", "#ffdab0", "#ffb570", "#ed823b", "#bc4c16"],
+  codex: ["#f0f0ff", "#d8dcff", "#a5abfa", "#7169e7", "#43388f"],
+  opencode: ["#f3f3f3", "#dedede", "#aaa", "#666", "#252525"],
+};
+const providerLabel = (provider: AiUsageProvider) =>
+  provider.id === "all" ? "All" : provider.id === "opencode" ? "OpenCode" : provider.label;
 const DAY_LABELS = ["Mon", "", "", "", "", "", "Sun"];
 const MONTH_LABELS = [
   "Jan",
@@ -136,7 +144,7 @@ function buildCalendar(
       level:
         day.total <= 0 || maxTotal <= 0
           ? 0
-          : Math.max(1, Math.ceil((day.total / maxTotal) * 4)),
+          : Math.max(1, Math.ceil(Math.sqrt(day.total / maxTotal) * 4)),
     })),
     columns,
     monthLabels,
@@ -163,6 +171,8 @@ function Heatmap({
   provider: AiUsageProvider;
   range: AiUsageSnapshot["range"];
 }) {
+  const [activeDay, setActiveDay] = useState<string | null>(null);
+  const palette = PALETTES[provider.id] ?? PALETTES.all;
   const calendar = useMemo(
     () => buildCalendar(provider.daily, range),
     [provider.daily, range],
@@ -175,14 +185,16 @@ function Heatmap({
         style={
           {
             "--ai-usage-accent": provider.color,
+            minWidth: 560,
           } as React.CSSProperties
         }
       >
         <div
           className="ai-usage-calendar__months"
           style={{
+            minWidth: 560,
             gridTemplateColumns:
-              "repeat(" + calendar.columns + ", minmax(10px, 1fr))",
+              "repeat(" + calendar.columns + ", minmax(6px, 1fr))",
           }}
           aria-hidden="true"
         >
@@ -196,7 +208,7 @@ function Heatmap({
           ))}
         </div>
 
-        <div className="ai-usage-calendar__body">
+        <div className="ai-usage-calendar__body" style={{ minWidth: 560 }}>
           <div className="ai-usage-calendar__day-labels" aria-hidden="true">
             {DAY_LABELS.map((label, index) => (
               <span key={index}>{label}</span>
@@ -208,9 +220,9 @@ function Heatmap({
             style={{
               gridTemplateRows: "repeat(7, minmax(10px, 1fr))",
               gridTemplateColumns:
-                "repeat(" + calendar.columns + ", minmax(10px, 1fr))",
+                "repeat(" + calendar.columns + ", minmax(6px, 1fr))",
             }}
-            role="img"
+            role="group"
             aria-label={
               provider.label +
               " daily token usage from " +
@@ -220,30 +232,38 @@ function Heatmap({
             }
           >
             {calendar.days.map((day) => (
-              <span
+              <button
+                type="button"
                 key={day.date}
                 className="ai-usage-cell"
-                data-level={day.level}
-                aria-label={day.date + ": " + formatTokenCount(day.total)}
+                disabled={day.date < range.start || day.date > range.end}
+                style={{ backgroundColor: palette[day.level], opacity: day.date < range.start || day.date > range.end ? 0 : 1, border: 0, padding: 0, minWidth: 6, cursor: "pointer", aspectRatio: "1" }}
+                onMouseEnter={() => setActiveDay(day.date)}
+                onFocus={() => setActiveDay(day.date)}
+                onClick={() => setActiveDay(day.date)}
+                aria-label={day.date + ": " + formatTokenCount(day.total) + " tokens"}
                 title={day.date + " · " + formatTokenCount(day.total) + " tokens"}
               />
             ))}
           </div>
         </div>
 
-        <div className="mt-3 flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.12em] text-gray-400">
-          <span>Less</span>
+        <div className="mt-4 flex items-center gap-2 text-[10px] text-gray-500">
+          <span>Daily tokens · Low</span>
           <div className="flex items-center gap-1" aria-hidden="true">
             {[0, 1, 2, 3, 4].map((level) => (
               <span
                 key={level}
                 className="ai-usage-cell h-3 w-3"
-                data-level={level}
+                style={{ backgroundColor: palette[level], opacity: 1 }}
               />
             ))}
           </div>
-          <span>More</span>
+          <span>High</span>
         </div>
+        <p className="mt-3 min-h-5 text-xs text-gray-500" aria-live="polite">
+          {activeDay ? `${formatSyncDate(activeDay)} · ${formatTokenCount(calendar.days.find((day) => day.date === activeDay)?.total ?? 0)} tokens` : "Hover or select a day to explore usage."}
+        </p>
       </div>
     </div>
   );
@@ -273,15 +293,15 @@ function UsagePanel({
         <div className="flex items-center gap-3">
           <span
             className="h-3 w-3 rounded-full"
-            style={{ backgroundColor: provider.color }}
+            style={{ backgroundColor: (PALETTES[provider.id] ?? PALETTES.all)[4] }}
             aria-hidden="true"
           />
           <div>
             <p className="text-[10px] uppercase tracking-[0.15em] text-gray-400">
-              {compact ? "Combined usage" : "Coding agent"}
+              {compact ? "Across all coding agents" : "Coding activity"}
             </p>
             <h3 className="mt-1 text-[1.55rem] font-medium tracking-tight text-gray-900">
-              {provider.label}
+              {compact ? "Tokens consumed" : providerLabel(provider)}
             </h3>
           </div>
         </div>
@@ -355,12 +375,6 @@ export default function AiUsage({
     selection === "all"
       ? null
       : snapshot?.providers.find((provider) => provider.id === selection);
-  const visibleProviders =
-    selection === "all"
-      ? snapshot?.providers ?? []
-      : selectedProvider
-        ? [selectedProvider]
-        : [];
   const summaryProvider =
     selection === "all" ? snapshot?.all : selectedProvider;
 
@@ -369,17 +383,16 @@ export default function AiUsage({
       <div className="mb-7 flex flex-col gap-4 border-t border-gray-100 pt-5 md:flex-row md:items-end md:justify-between">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-gray-500">
-            AI workbench
+            AI usage
           </p>
           <p className="mt-2 max-w-xl text-[13px] leading-relaxed text-gray-500">
-            A rolling snapshot of the tools I use to think, build, and ship.
-            The source stays local; this page receives only the aggregate.
+            A year of building with AI.
           </p>
         </div>
 
         {snapshot && (
           <label className="flex items-center gap-3 text-xs text-gray-500">
-            <span>View</span>
+            <span className="sr-only">Coding agent</span>
             <select
               className="rounded-full border border-gray-200 bg-white px-3 py-2 text-xs text-gray-800 outline-none transition-colors focus:border-gray-400"
               value={selection}
@@ -388,10 +401,10 @@ export default function AiUsage({
               }
               aria-label="Choose an AI usage provider"
             >
-              <option value="all">All tools</option>
+              <option value="all">All</option>
               {snapshot.providers.map((provider) => (
                 <option key={provider.id} value={provider.id}>
-                  {provider.label}
+                  {providerLabel(provider)}
                 </option>
               ))}
             </select>
@@ -407,29 +420,14 @@ export default function AiUsage({
         <>
           {summaryProvider && (
             <UsagePanel
+              key={selection}
               provider={summaryProvider}
               range={snapshot.range}
               compact={selection === "all"}
             />
           )}
-          {selection === "all" && (
-            <div className="mt-3">
-              {visibleProviders.map((provider) => (
-                <UsagePanel
-                  key={provider.id}
-                  provider={provider}
-                  range={snapshot.range}
-                />
-              ))}
-            </div>
-          )}
           <p className="mt-5 text-[11px] text-gray-400">
-            Last synced {formatSyncDate(snapshot.generatedAt)} ·{" "}
-            {snapshot.providers.length} provider
-            {snapshot.providers.length === 1 ? "" : "s"} with data
-            {snapshot.missingProviders.length > 0
-              ? " · " + snapshot.missingProviders.length + " unavailable locally"
-              : ""}
+            Updated {formatSyncDate(snapshot.generatedAt)} · Synced every 4 hours
           </p>
         </>
       )}
