@@ -1,20 +1,26 @@
+import { useState } from "react";
 import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
-import { getBlogs, getPosts } from "../data/content.server";
+import { getBooks, getBlogs, getPosts } from "../data/content.server";
+import type { Book } from "../data/books";
 import type { Blog } from "../data/blogs";
 
 export async function loader() {
-  const [favorites, posts] = await Promise.all([getBlogs(), getPosts()]);
-  return { favorites, posts };
+  const [books, favorites, posts] = await Promise.all([
+    getBooks(),
+    getBlogs(),
+    getPosts(),
+  ]);
+  return { books, favorites, posts };
 }
 
 export function meta() {
   return [
-    { title: "Blogs · Haseeb Arshad" },
+    { title: "Reading · Haseeb Arshad" },
     {
       name: "description",
       content:
-        "Blogs and writing I keep coming back to, especially around software, AI, and the ideas behind the work.",
+        "Books, blogs, writing, and sites I keep coming back to.",
     },
   ];
 }
@@ -33,6 +39,71 @@ function ArrowOut() {
     >
       <path d="M7 17L17 7M17 7H8M17 7v9" />
     </svg>
+  );
+}
+
+function coverUrl(isbn13: string) {
+  return `https://covers.openlibrary.org/b/isbn/${isbn13}-M.jpg`;
+}
+
+/* Use a letter tile when a book has no ISBN or its cover cannot load. */
+function BookCover({ book }: { book: Book }) {
+  const [broken, setBroken] = useState(false);
+
+  if (!book.isbn13 || broken) {
+    return (
+      <div className="flex aspect-[2/3] w-full shrink-0 items-center justify-center rounded-md bg-gray-100 text-lg font-medium text-gray-400">
+        {book.title.charAt(0)}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={coverUrl(book.isbn13)}
+      alt={`Cover of ${book.title}`}
+      loading="lazy"
+      onError={() => setBroken(true)}
+      className="aspect-[2/3] w-full shrink-0 rounded-md bg-gray-100 object-cover shadow-sm"
+    />
+  );
+}
+
+function BookCard({ book, delay }: { book: Book; delay: number }) {
+  return (
+    <BlurIn delay={delay}>
+      <div className="group flex gap-3.5 rounded-xl p-2 -m-2 transition-colors hover:bg-gray-50/60">
+        <div className="w-[72px] shrink-0">
+          <BookCover book={book} />
+        </div>
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="flex items-baseline gap-2">
+            <h3 className="text-[14px] font-medium text-gray-900">
+              {book.title}
+            </h3>
+            {book.favorite && (
+              <span className="shrink-0 text-[10px] font-medium uppercase tracking-wider text-amber-600">
+                Favourite
+              </span>
+            )}
+          </div>
+          <p className="text-[13px] text-gray-500">{book.author}</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
+            {book.note}
+          </p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {book.genres.map((genre) => (
+              <span
+                key={genre}
+                className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] text-gray-500"
+              >
+                {genre}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </BlurIn>
   );
 }
 
@@ -63,18 +134,39 @@ function LinkRow({ blog, delay }: { blog: Blog; delay: number }) {
 }
 
 export default function Reading() {
-  const { favorites, posts } = useLoaderData<typeof loader>();
+  const { books, favorites, posts } = useLoaderData<typeof loader>();
   const blogs = favorites.filter((blog) => blog.kind !== "site");
   const sites = favorites.filter((blog) => blog.kind === "site");
 
   return (
     <section className="pb-24">
       <BlurIn>
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">Blogs</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">Reading</h2>
         <p className="text-gray-500 text-sm mb-8 border-b border-gray-100 pb-6">
-          Software, AI, and the ideas I keep coming back to.
+          Books, blogs, writing, and sites I keep coming back to.
         </p>
       </BlurIn>
+
+      {/* ─── Books ─── */}
+      {books.length > 0 && (
+        <div className="mb-14">
+          <BlurIn delay={60}>
+            <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">
+              Books
+            </h3>
+          </BlurIn>
+
+          <div className="grid grid-cols-1 gap-x-8 gap-y-1 sm:grid-cols-2">
+            {books.map((book, i) => (
+              <BookCard
+                key={`${book.title}-${book.author}`}
+                book={book}
+                delay={100 + i * 50}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ─── My writing ─── */}
       {posts.length > 0 && (
