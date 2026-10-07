@@ -6,14 +6,21 @@ import AgentBox, { generalAgent } from "../components/agent-box";
 import { getBlogs, projectLinksFrom } from "../data/content.server";
 import AiUsage from "../components/ai-usage";
 import { getAiUsageSnapshot } from "../data/ai-usage.server";
+import { managedContent } from "../editor/public.server";
+import { seedState } from "../editor/seed";
 
 export async function loader() {
-  const [favorites, projectLinks, aiUsage] = await Promise.all([
+  const [favorites, projectLinks, aiUsage, profiles] = await Promise.all([
     getBlogs(),
     projectLinksFrom(),
     getAiUsageSnapshot(),
+    managedContent("profile"),
   ]);
-  return { favorites, projectLinks, aiUsage };
+  const profile =
+    profiles === null
+      ? seedState().entries.find((e) => e.draft.kind === "profile")?.draft
+      : profiles[0];
+  return { favorites, projectLinks, aiUsage, profile };
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -91,8 +98,8 @@ function CompanyLink() {
             <p className="text-gray-500 text-[13px] leading-relaxed mt-2">
               Electronics commerce for consumer and B2B buyers. As a founding
               engineer, I build the operational layer behind it: turning RFQs
-              into workable next steps, making supplier and buyer context
-              easier to find, and automating the repetitive parts while keeping
+              into workable next steps, making supplier and buyer context easier
+              to find, and automating the repetitive parts while keeping
               important decisions visible.
             </p>
             <span className="text-gray-500 text-xs mt-3 block">
@@ -109,7 +116,14 @@ function CompanyLink() {
 function SelectedBlogs({
   favorites,
 }: {
-  favorites: { title: string; author: string; url: string; note: string; featured?: boolean; kind?: "blog" | "site" }[];
+  favorites: {
+    title: string;
+    author: string;
+    url: string;
+    note: string;
+    featured?: boolean;
+    kind?: "blog" | "site";
+  }[];
 }) {
   const featured = favorites
     .filter((b) => b.featured && b.kind !== "site")
@@ -179,7 +193,8 @@ function SelectedBlogs({
 }
 
 export default function Home() {
-  const { favorites, projectLinks, aiUsage } = useLoaderData<typeof loader>();
+  const { favorites, projectLinks, aiUsage, profile } =
+    useLoaderData<typeof loader>();
 
   return (
     <>
@@ -188,16 +203,14 @@ export default function Home() {
           {/* font-medium (500) is the only real weight of ABC Diatype we
              ship; semibold would render as synthesized bold */}
           <h1 className="text-[1.35rem] font-medium text-gray-900 tracking-tight">
-            Haseeb Arshad
+            {profile?.title}
           </h1>
           <p className="text-[1.05rem] text-gray-500 mt-1 max-w-2xl">
-            I&apos;m a builder who enjoys solving ambiguous problems. I work
-            across machine learning systems and software engineering, turning
-            messy business context into useful decisions.
+            {profile?.summary}
           </p>
           <p className="text-[0.95rem] text-gray-500 mt-3">
-            Founding Full-Stack &amp; Principal Engineer at <CompanyLink />,
-            AI &amp; Persistent Intelligence Systems
+            Founding Full-Stack &amp; Principal Engineer at <CompanyLink />, AI
+            &amp; Persistent Intelligence Systems
           </p>
           <p className="text-[0.95rem] text-gray-400 mt-2">
             Currently building{" "}
@@ -220,9 +233,7 @@ export default function Home() {
             className="text-[2rem] md:text-[2.5rem] leading-[1.2] font-normal text-gray-400 max-w-2xl"
             style={{ fontFamily: "var(--font-serif)" }}
           >
-            Mind and hand, in equal measure. I build software slowly and
-            deliberately, until the craft turns invisible, and only the
-            feeling is left.
+            {profile?.body}
           </p>
         </section>
       </BlurIn>

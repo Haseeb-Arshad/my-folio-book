@@ -9,7 +9,7 @@
 import assert from "node:assert/strict";
 import { build } from "esbuild";
 
-async function loadContent(env) {
+async function loadContent(env, emptyDatabase = false) {
   for (const key of Object.keys(process.env)) {
     if (key.startsWith("SUPABASE_")) delete process.env[key];
   }
@@ -23,6 +23,11 @@ async function loadContent(env) {
     platform: "node",
     target: "node22",
     write: false,
+    banner: { js: 'import { createRequire as testCreateRequire } from "node:module"; const require = testCreateRequire(process.cwd()+"/package.json");' },
+    plugins: emptyDatabase ? [{ name: "healthy-empty-database", setup(builder) {
+      builder.onResolve({ filter: /supabase\.server$/ }, () => ({ path: "empty-database", namespace: "test" }));
+      builder.onLoad({ filter: /.*/, namespace: "test" }, () => ({ contents: `const query = { select: () => query, eq: () => query, order: () => query, then: resolve => Promise.resolve({ data: [], error: null, count: ${emptyDatabase === "unseeded" ? 0 : 1} }).then(resolve), maybeSingle: async () => ({ data: ${emptyDatabase === "unseeded" ? "null" : "{version:0,entries:[]}"}, error:null }) }; export const supabaseServer = () => ({ from: () => query });`, loader: "js" }));
+    }}] : [],
     // Bust the module cache so each scenario re-evaluates the client singleton.
     define: { __SCENARIO__: JSON.stringify(String(Math.random())) },
   });
@@ -116,4 +121,15 @@ const staticCounts = {
   console.log("  project link table  -> resolves offline");
 }
 
-console.log("Content fallback verified across 3 scenarios.");
+// Successful empty queries represent intentional unpublication, not an outage.
+{
+  const content = await loadContent({}, true);
+  for (const name of ["getProjects", "getExperience", "getBlogs", "getBooks", "getCaseStudies"]) assert.deepEqual(await content[name](), [], `${name} respects an intentionally empty database`);
+  console.log("  healthy empty store -> empty content, no resurrection");
+}
+{
+  const content = await loadContent({}, "unseeded");
+  assert.equal((await content.getCaseStudies()).length, staticCounts.caseStudies, "the original file-backed case study remains available before its legacy table is seeded");
+  console.log("  unseeded legacy case -> original file-backed route retained");
+}
+console.log("Content fallback verified across 5 scenarios.");

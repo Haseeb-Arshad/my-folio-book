@@ -50,7 +50,7 @@ function coverUrl(isbn13: string) {
 function BookCover({ book }: { book: Book }) {
   const [broken, setBroken] = useState(false);
 
-  if (!book.isbn13 || broken) {
+  if ((!book.isbn13 && !book.cover) || broken) {
     return (
       <div className="flex aspect-[2/3] w-full shrink-0 items-center justify-center rounded-md bg-gray-100 text-lg font-medium text-gray-400">
         {book.title.charAt(0)}
@@ -60,7 +60,7 @@ function BookCover({ book }: { book: Book }) {
 
   return (
     <img
-      src={coverUrl(book.isbn13)}
+      src={book.cover || coverUrl(book.isbn13!)}
       alt={`Cover of ${book.title}`}
       loading="lazy"
       onError={() => setBroken(true)}

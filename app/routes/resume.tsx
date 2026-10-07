@@ -3,12 +3,19 @@ import { useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import AgentBox, { cvAgent } from "../components/agent-box";
 import { projectLinksFrom } from "../data/content.server";
+import { managedContent } from "../editor/public.server";
 import { resumeProfile } from "../data/resume";
 import { capturePostHogEvent } from "../lib/analytics.client";
 
 export async function loader() {
-  const projectLinks = await projectLinksFrom();
-  return { projectLinks };
+  const [projectLinks, documents] = await Promise.all([
+    projectLinksFrom(),
+    managedContent("resume"),
+  ]);
+  return {
+    projectLinks,
+    pdfPath: documents === null ? "/resume.pdf" : (documents[0]?.url ?? null),
+  };
 }
 
 export function meta() {
@@ -22,14 +29,14 @@ export function meta() {
   ];
 }
 
-const PDF_PATH = "/resume.pdf";
-
 /* ─── Header actions ─── */
 function PdfActions() {
+  const { pdfPath } = useLoaderData<typeof loader>();
+  if (!pdfPath) return null;
   return (
     <div className="flex shrink-0 items-center gap-2">
       <a
-        href={PDF_PATH}
+        href={pdfPath}
         download="Haseeb-Arshad-Resume.pdf"
         onClick={() =>
           capturePostHogEvent("cv_pdf_downloaded", { route_path: "/resume" })
@@ -52,7 +59,7 @@ function PdfActions() {
         Download PDF
       </a>
       <a
-        href={PDF_PATH}
+        href={pdfPath}
         target="_blank"
         rel="noreferrer"
         onClick={() =>
@@ -83,12 +90,8 @@ function PdfActions() {
 function ViewerFallback() {
   return (
     <div className="p-6">
-      <p className="text-sm font-medium text-gray-900">
-        {resumeProfile.name}
-      </p>
-      <p className="mt-1 text-[13px] text-gray-500">
-        {resumeProfile.headline}
-      </p>
+      <p className="text-sm font-medium text-gray-900">{resumeProfile.name}</p>
+      <p className="mt-1 text-[13px] text-gray-500">{resumeProfile.headline}</p>
       <p className="mt-4 text-[13px] leading-relaxed text-gray-600">
         {resumeProfile.summary}
       </p>
@@ -148,7 +151,7 @@ function ViewerFallback() {
 }
 
 export default function Resume() {
-  const { projectLinks } = useLoaderData<typeof loader>();
+  const { projectLinks, pdfPath } = useLoaderData<typeof loader>();
 
   useEffect(() => {
     capturePostHogEvent("cv_page_viewed", { route_path: "/resume" });
@@ -175,16 +178,22 @@ export default function Resume() {
       <BlurIn delay={90}>
         <div className="mb-16 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
           {/* Desktop: the real PDF, with the summary as the no-plugin fallback. */}
-          <object
-            data={`${PDF_PATH}#view=FitH&navpanes=0`}
-            type="application/pdf"
-            aria-label="Résumé, PDF"
-            className="hidden h-[min(88vh,1150px)] w-full md:block"
-          >
-            <div className="bg-white">
+          {pdfPath ? (
+            <object
+              data={`${pdfPath}#view=FitH&navpanes=0`}
+              type="application/pdf"
+              aria-label="Résumé, PDF"
+              className="hidden h-[min(88vh,1150px)] w-full md:block"
+            >
+              <div className="bg-white">
+                <ViewerFallback />
+              </div>
+            </object>
+          ) : (
+            <div className="hidden bg-white md:block">
               <ViewerFallback />
             </div>
-          </object>
+          )}
 
           {/* Mobile: inline PDF rendering is unreliable, so skip straight to
               the summary rather than showing an empty grey box. */}

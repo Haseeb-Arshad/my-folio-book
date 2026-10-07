@@ -14,6 +14,8 @@ import {
   type CaseStudySection,
 } from "./case-studies";
 import type { LiveNote } from "../agent/prompt.server";
+import { approvedAgentNotes } from "../editor/store.server";
+import { managedContent, asProject, asExperience, asBook, asBlog, asPost, asCaseStudy } from "../editor/public.server";
 
 /* ───────────────────────────────────────────────────────────
    Content reads, Supabase first and the committed data files
@@ -76,6 +78,8 @@ async function rows<T>(query: PromiseLike<{ data: T[] | null; error: unknown }>)
 }
 
 export async function getProjects(): Promise<Project[]> {
+  const managed = await managedContent("project");
+  if (managed !== null) return managed.map(asProject);
   return read(
     "projects",
     async () => {
@@ -86,7 +90,6 @@ export async function getProjects(): Promise<Project[]> {
           .eq("published", true)
           .order("sort_order", { ascending: true })
       );
-      if (data.length === 0) return staticProjects;
 
       return data.map((row: Record<string, any>): Project => {
         const popup =
@@ -118,6 +121,8 @@ export async function getProjects(): Promise<Project[]> {
 }
 
 export async function getExperience(): Promise<Experience[]> {
+  const managed = await managedContent("experience");
+  if (managed !== null) return managed.map(asExperience);
   return read(
     "experience",
     async () => {
@@ -128,7 +133,6 @@ export async function getExperience(): Promise<Experience[]> {
           .eq("published", true)
           .order("sort_order", { ascending: true })
       );
-      if (data.length === 0) return staticExperience;
 
       return data.map((row: Record<string, any>): Experience => ({
         role: row.role,
@@ -149,6 +153,8 @@ export async function getExperience(): Promise<Experience[]> {
  * copy is the fallback, so the page still renders with no credentials.
  */
 export async function getCaseStudies(): Promise<CaseStudy[]> {
+  const managed = await managedContent("case-study");
+  if (managed !== null) return managed.map(asCaseStudy);
   return read(
     "case_studies",
     async () => {
@@ -159,7 +165,17 @@ export async function getCaseStudies(): Promise<CaseStudy[]> {
           .eq("published", true)
           .order("sort_order", { ascending: true })
       );
-      if (data.length === 0) return staticCaseStudies;
+
+      // The original case study was published from its committed file before
+      // this optional table was seeded. Preserve that route only when the
+      // entire legacy table is empty. Existing unpublished rows stay hidden.
+      if (!data.length) {
+        const { count, error } = await supabaseServer()!
+          .from("case_studies")
+          .select("slug", { count: "exact", head: true });
+        if (error) throw error;
+        return count === 0 ? staticCaseStudies : [];
+      }
 
       return data.map((row: Record<string, any>): CaseStudy => ({
         slug: row.slug,
@@ -195,6 +211,8 @@ export async function getCaseStudiesByOrg(): Promise<Map<string, CaseStudy[]>> {
 }
 
 export async function getBlogs(): Promise<Blog[]> {
+  const managed = await managedContent("link");
+  if (managed !== null) return managed.map(asBlog).filter(isVisibleBlog);
   return read(
     "blogs",
     async () => {
@@ -206,7 +224,6 @@ export async function getBlogs(): Promise<Blog[]> {
           .order("sort_order", { ascending: true })
       );
       const visible = data.filter(isVisibleBlog);
-      if (visible.length === 0) return staticFavorites;
 
       return visible.map((row: Record<string, any>): Blog => ({
         title: row.title,
@@ -222,6 +239,8 @@ export async function getBlogs(): Promise<Blog[]> {
 }
 
 export async function getPosts(): Promise<Post[]> {
+  const managed = await managedContent("post");
+  if (managed !== null) return managed.map(asPost);
   return read(
     "posts",
     async () => {
@@ -246,6 +265,8 @@ export async function getPosts(): Promise<Post[]> {
 }
 
 export async function getBooks(): Promise<Book[]> {
+  const managed = await managedContent("book");
+  if (managed !== null) return managed.map(asBook);
   return read(
     "books",
     async () => {
@@ -256,7 +277,6 @@ export async function getBooks(): Promise<Book[]> {
           .eq("published", true)
           .order("sort_order", { ascending: true })
       );
-      if (data.length === 0) return staticBooks;
 
       return data.map((row: Record<string, any>): Book => ({
         title: row.title,
@@ -293,7 +313,7 @@ export async function projectLinksFrom(): Promise<
  * simply answers from the published notes, which is the correct degradation.
  */
 export async function getLiveNotes(): Promise<LiveNote[]> {
-  return read(
+  const base = await read(
     "live_notes",
     async () => {
       const data = await rows(
@@ -311,4 +331,6 @@ export async function getLiveNotes(): Promise<LiveNote[]> {
     },
     []
   );
+  const approved = await approvedAgentNotes();
+  return [...approved, ...base].slice(0, 12);
 }

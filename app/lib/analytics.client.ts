@@ -19,6 +19,7 @@ const VISITOR_ID_KEY = "portfolio.analytics.visitor_id";
 let posthogPromise: Promise<PostHogClient | null> | null = null;
 let posthogClient: PostHogClient | null = null;
 let posthogReady = false;
+let ownerPausedCapture = false;
 let fallbackVisitorId: string | undefined;
 const pendingEvents: PendingEvent[] = [];
 
@@ -55,11 +56,12 @@ export function getAnalyticsVisitorId() {
 }
 
 async function getPostHog() {
-  if (typeof window === "undefined" || !POSTHOG_TOKEN) return null;
+  if (typeof window === "undefined" || !POSTHOG_TOKEN || window.location.pathname.startsWith("/admin")) return null;
   if (posthogPromise) return posthogPromise;
 
   posthogPromise = import("posthog-js")
     .then(({ default: client }) => {
+      if (window.location.pathname.startsWith("/admin")) { posthogPromise = null; return null; }
       client.init(POSTHOG_TOKEN, {
         api_host: POSTHOG_API_HOST,
         defaults: "2026-05-30",
@@ -69,10 +71,16 @@ async function getPostHog() {
         request_batching: false,
         session_recording: {
           maskAllInputs: true,
+          blockClass: "ph-no-capture",
         },
         loaded: (loadedClient) => {
           posthogClient = loadedClient;
           posthogReady = true;
+          if (window.location.pathname.startsWith("/admin")) {
+            pendingEvents.length = 0;
+            setOwnerAnalyticsPrivacy(true);
+            return;
+          }
           const visitorId = getAnalyticsVisitorId();
           if (visitorId) {
             loadedClient.register({ portfolio_visitor_id: visitorId });
@@ -97,6 +105,7 @@ export function capturePostHogEvent(
   event: string,
   properties: Record<string, unknown> = {},
 ) {
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) return;
   if (posthogReady && posthogClient) {
     posthogClient.capture(event, properties);
     return;
@@ -106,6 +115,20 @@ export function capturePostHogEvent(
 
   pendingEvents.push({ event, properties });
   void getPostHog();
+}
+
+/** Owner pages can contain private drafts and access keys. Exclude all capture. */
+export function setOwnerAnalyticsPrivacy(ownerPage: boolean) {
+  if (!posthogClient) return;
+  if (ownerPage) {
+    pendingEvents.length = 0;
+    posthogClient.stopSessionRecording();
+    ownerPausedCapture ||= !posthogClient.has_opted_out_capturing();
+    posthogClient.opt_out_capturing();
+  } else if (ownerPausedCapture) {
+    posthogClient.opt_in_capturing();
+    ownerPausedCapture = false;
+  }
 }
 
 export function captureAgentEvent(

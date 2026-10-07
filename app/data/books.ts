@@ -9,6 +9,7 @@
    ─────────────────────────────────────────────────────────── */
 
 export type Book = {
+  cover?: string;
   title: string;
   author: string;
   isbn13?: string;

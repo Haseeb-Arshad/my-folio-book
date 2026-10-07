@@ -11,3 +11,6 @@
 /output/playwright/
 /outputs/ai-usage/
 /workers/ai-usage/.dev.vars
+
+# Local editor state contains private drafts. Never commit it.
+.portfolio/

@@ -23,6 +23,8 @@ services:
         sync: false
       - key: SUPABASE_SECRET_KEY
         sync: false
+      - key: PORTFOLIO_ADMIN_KEY
+        sync: false
       - key: SUPABASE_JWKS_URL
         sync: false
       - key: AI_USAGE_STATS_URL

@@ -28,6 +28,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isOwner = location.pathname.startsWith("/admin");
   return (
     <html lang="en">
       <head>
@@ -42,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Last child of body so it blends against the whole page: a filter or
             an `isolation` on an ancestor would trap the blend in that
             subtree. */}
-        <Cursor />
+        {!isOwner && <Cursor />}
         <ScrollRestoration />
         <Scripts />
       </body>
@@ -55,7 +57,7 @@ export default function App() {
   const isHome = location.pathname === "/";
   const isPlayground = location.pathname === "/playground";
 
-  if (isPlayground) {
+  if (isPlayground || location.pathname.startsWith("/admin")) {
     return <Outlet />;
   }
 
