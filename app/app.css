@@ -351,6 +351,533 @@ html.has-custom-cursor [contenteditable="true"] {
   align-items: center;
   gap: 0.38rem;
   border: 1px solid rgb(229 231 235 / 0.9);
+/* ── Project demos: short looping scenes on the Work page ──
+   Scenes flip `data-on` as their timeline advances; the transition does the
+   rest, so a scene never has to know how it is animated. */
+.demo-appear {
+  transition:
+    opacity 450ms var(--ease-out),
+    transform 450ms var(--ease-out);
+}
+.demo-appear[data-on="false"] {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.demo-scene {
+  transition: opacity 280ms var(--ease-out);
+}
+.demo-scene[data-clearing="true"] {
+  opacity: 0;
+}
+
+@keyframes demoWave {
+  from {
+    transform: scaleY(0.2);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.demo-wave > span {
+  transform: scaleY(0.2);
+  transition: transform 300ms var(--ease-out);
+}
+.demo-wave[data-live="true"] > span {
+  animation: demoWave 0.6s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes demoPulse {
+  from {
+    transform: scale(1);
+    opacity: 0.45;
+  }
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
+}
+.demo-pulse {
+  background: currentColor;
+  animation: demoPulse 1.4s var(--ease-out) infinite;
+}
+
+@keyframes demoCaret {
+  50% {
+    opacity: 0;
+  }
+}
+.demo-caret {
+  animation: demoCaret 1s steps(1) infinite;
+}
+
+/* Strokes drawn on with pathLength="1". */
+.demo-draw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 900ms var(--ease-in-out);
+}
+.demo-draw[data-on="true"] {
+  stroke-dashoffset: 0;
+}
+
+/* ── GIDEON demo: chatgideon.com's room, scaled into a card ──
+   Values follow GIDEON's own stylesheet (glass, rim, timings, easing), so the
+   demo moves the way the product does. Layout switches on the stage's width
+   through container queries: a wide stage gets the product's split view, a
+   phone gets the stacked one. In the components layer, so a utility on the
+   element (hidden, a radius) still wins over these defaults. */
+@layer components {
+.gd-room {
+  --ice: 191 233 255;
+  --gd-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  color: #eef3fb;
+}
+/* Reset to the first beat without animating back across the room. */
+.gd-room[data-reset="true"] * {
+  transition: none !important;
+}
+
+.gd-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(70% 60% at 28% 18%, rgb(30 54 92 / 0.55), transparent 70%),
+    radial-gradient(60% 55% at 78% 72%, rgb(20 40 74 / 0.5), transparent 70%),
+    radial-gradient(130% 100% at 50% 40%, #0c172d, #060a13 72%);
+}
+.gd-field::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(26% 30% at 22% 62%, rgb(58 92 146 / 0.3), transparent 70%),
+    radial-gradient(22% 26% at 76% 28%, rgb(76 116 176 / 0.24), transparent 70%),
+    radial-gradient(30% 24% at 58% 86%, rgb(40 70 120 / 0.26), transparent 70%);
+  filter: blur(26px);
+  animation: gdDrift 22s ease-in-out infinite alternate;
+}
+.gd-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 100% at 50% 38%, transparent 52%, rgb(3 5 10 / 0.72));
+}
+@keyframes gdDrift {
+  to {
+    transform: translate3d(4%, -3%, 0) scale(1.06);
+  }
+}
+
+/* The face: travels from the middle of the room to the corner when a card opens. */
+.gd-face {
+  position: absolute;
+  left: 50%;
+  top: 36%;
+  transform: translate(-50%, -50%);
+  transition:
+    left 900ms var(--ease-in-out),
+    top 900ms var(--ease-in-out),
+    transform 900ms var(--ease-in-out);
+}
+.gd-room[data-open="true"] .gd-face {
+  left: 44px;
+  top: 34px;
+  transform: translate(-50%, -50%) scale(0.48);
+}
+.gd-eyes {
+  --eye-w: 30px;
+  display: flex;
+  gap: calc(var(--eye-w) * 0.72);
+  filter: drop-shadow(0 0 5px rgb(var(--ice) / 0.55)) drop-shadow(0 0 16px rgb(var(--ice) / 0.22));
+  transition: translate 500ms var(--ease-out);
+}
+.gd-eyes[data-glance="true"] {
+  translate: 4px 1px;
+}
+.gd-eye {
+  position: relative;
+  width: var(--eye-w);
+  height: calc(var(--eye-w) * 1.28);
+  transition: transform 460ms var(--ease-out);
+}
+.gd-eye-body {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 44% 44% 40% 40% / 36% 36% 46% 46%;
+  background: linear-gradient(#ffffff, #edf5ff 46%, #cbd8e8);
+  transition:
+    opacity 300ms ease-out,
+    border-radius 460ms var(--ease-out),
+    transform 460ms var(--ease-out);
+  animation: gdBlink 5.6s infinite;
+}
+.gd-eye-body::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(11 16 23 / 0.16) 2px 3px);
+}
+.gd-eye-arc {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 20%;
+  height: 46%;
+  border: calc(var(--eye-w) * 0.2) solid #f2f7ff;
+  border-bottom: 0;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  opacity: 0;
+  transform: translateY(20%) scaleY(0.6);
+  transition:
+    opacity 300ms ease-out,
+    transform 460ms var(--ease-out);
+}
+@keyframes gdBlink {
+  0%,
+  93%,
+  100% {
+    scale: 1 1;
+  }
+  96% {
+    scale: 1 0.08;
+  }
+}
+.gd-eyes[data-mood="curious"] .gd-eye:first-child {
+  transform: translateY(-6%) scale(1.12);
+}
+.gd-eyes[data-mood="curious"] .gd-eye:last-child {
+  transform: translateY(14%) scale(0.8);
+}
+.gd-eyes[data-mood="focused"] .gd-eye-body {
+  border-radius: 14% 14% 24% 24%;
+  transform: scaleY(0.58) translateY(16%);
+}
+.gd-eyes[data-mood="focused"] .gd-eye:first-child {
+  transform: rotate(9deg);
+}
+.gd-eyes[data-mood="focused"] .gd-eye:last-child {
+  transform: rotate(-9deg);
+}
+.gd-eyes[data-mood="happy"] .gd-eye-body {
+  opacity: 0;
+  transform: scaleY(0.3) translateY(30%);
+  animation: none;
+}
+.gd-eyes[data-mood="happy"] .gd-eye-arc {
+  opacity: 1;
+  transform: none;
+}
+
+/* Glass, as GIDEON draws it: two washes of light, a blurred room behind,
+   and a conic rim that is brightest where the light falls. */
+.gd-glass {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 90% at 22% 0%, rgb(255 255 255 / 0.1), transparent 58%),
+    linear-gradient(145deg, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0.01) 52%, rgb(255 255 255 / 0.03));
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
+  backdrop-filter: blur(14px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.34),
+    inset 0 -1px 0 rgb(255 255 255 / 0.06),
+    inset 0 0 22px rgb(255 255 255 / 0.05),
+    0 42px 90px -32px rgb(0 0 0 / 0.72),
+    0 16px 36px -16px rgb(0 0 0 / 0.5);
+}
+.gd-glass::before {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from 110deg,
+    rgb(255 255 255 / 0.72),
+    rgb(255 255 255 / 0.1) 20%,
+    rgb(255 255 255 / 0.34) 47%,
+    rgb(255 255 255 / 0.08) 73%,
+    rgb(255 255 255 / 0.72)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.gd-glass[data-state="searching"]::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.085) 50%, transparent 70%);
+  background-size: 260% 100%;
+  animation: gdSweep 1.9s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+  pointer-events: none;
+}
+@keyframes gdSweep {
+  from {
+    background-position: 130% 0;
+  }
+  to {
+    background-position: -30% 0;
+  }
+}
+
+.gd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgb(210 222 239 / 0.11);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.035);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.3),
+    inset 0 -1px 0 rgb(255 255 255 / 0.07),
+    0 10px 26px -12px rgb(0 0 0 / 0.55);
+  -webkit-backdrop-filter: blur(14px) saturate(1.8);
+  backdrop-filter: blur(14px) saturate(1.8);
+  font-size: 10.5px;
+  color: rgb(224 230 240 / 0.62);
+}
+.gd-kicker {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--ice) / 0.72);
+}
+.gd-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--ice) / 0.55);
+}
+.gd-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.05);
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: rgb(226 232 241 / 0.68);
+}
+/* A fact lights up as it is said aloud. */
+.gd-said {
+  background: linear-gradient(rgb(var(--ice) / 0.85), rgb(var(--ice) / 0.85)) no-repeat 0 100% / 0% 1px;
+  transition:
+    background-size 600ms var(--ease-out),
+    color 300ms ease-out;
+}
+.gd-said[data-said="true"] {
+  background-size: 100% 1px;
+  color: #ffffff;
+}
+
+/* Arrivals, with GIDEON's own curves: the pane condenses out of blur, its
+   pieces rise in reading order, and pictures settle into focus. */
+.gd-glass-in {
+  animation: gdGlassIn 760ms var(--gd-ease) backwards;
+}
+.gd-rise {
+  animation: gdRise 720ms var(--gd-ease) backwards;
+  animation-delay: calc(140ms + var(--i, 0) * 80ms);
+}
+.gd-media-in {
+  animation: gdMediaIn 1000ms var(--gd-ease) backwards;
+}
+.gd-tile-in {
+  animation: gdMediaIn 620ms var(--gd-ease) backwards;
+  animation-delay: calc(120ms + var(--i, 0) * 120ms);
+}
+.gd-compact-in {
+  animation: gdCompactIn 560ms var(--gd-ease) 220ms backwards;
+}
+.gd-bob {
+  animation: gdBob 7s ease-in-out infinite;
+}
+.gd-breathe {
+  animation: gdBreathe 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+.gd-ring::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgb(var(--ice) / 0.7);
+  animation: gdRing 1.4s var(--ease-out) infinite;
+}
+@keyframes gdGlassIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+    filter: blur(18px);
+  }
+}
+@keyframes gdRise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(6px);
+  }
+}
+@keyframes gdMediaIn {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+    filter: blur(14px);
+  }
+}
+@keyframes gdCompactIn {
+  from {
+    opacity: 0;
+    transform: translateX(-26px) scale(0.9);
+    filter: blur(8px);
+  }
+}
+@keyframes gdBob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -4px;
+  }
+}
+@keyframes gdBreathe {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+@keyframes gdRing {
+  from {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* The card that was in front shrinks off toward the column beside it. */
+.gd-pane {
+  transform-origin: 100% 0;
+  transition:
+    opacity 520ms var(--ease-out),
+    transform 620ms var(--ease-in-out),
+    filter 520ms var(--ease-out);
+}
+.gd-pane[data-leaving="true"] {
+  opacity: 0;
+  transform: translateX(16%) scale(0.42);
+  filter: blur(6px);
+}
+
+/* Narrow stage: the face docks top left, one line of the conversation sits
+   beside it, and the card takes the rest. */
+.gd-stage {
+  position: absolute;
+  inset: 70px 14px 40px;
+}
+.gd-front {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+.gd-side,
+.gd-transcript {
+  display: none;
+}
+.gd-dock {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  display: flex;
+  gap: 8px;
+  transform: translateX(-50%);
+  transition:
+    left 900ms var(--ease-in-out),
+    transform 900ms var(--ease-in-out),
+    opacity 400ms ease-out;
+}
+.gd-room[data-open="true"] .gd-dock {
+  opacity: 0;
+}
+
+/* Wide stage: GIDEON's split view. Face, conversation and controls make one
+   column down the left; the cards have the rest. */
+@container (min-width: 600px) {
+  .gd-eyes {
+    --eye-w: 38px;
+  }
+  .gd-room[data-open="true"] .gd-face {
+    left: 68px;
+    top: 50px;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  .gd-stage {
+    inset: 54px 22px 42px 262px;
+  }
+  .gd-front {
+    width: min(100%, 480px);
+  }
+  .gd-transcript {
+    position: absolute;
+    top: 92px;
+    bottom: 92px;
+    left: 24px;
+    width: 214px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 10px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(transparent, #000 28%);
+    mask-image: linear-gradient(transparent, #000 28%);
+  }
+  .gd-room[data-open="true"] .gd-dock {
+    left: 24px;
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@container (min-width: 800px) {
+  .gd-side {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    width: 156px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .gd-stage[data-split="true"] .gd-front {
+    width: calc(100% - 172px);
+  }
+}
+}
+
   border-radius: 9999px;
   background: rgb(249 250 251 / 0.85);
   padding: 0.2rem 0.5rem 0.2rem 0.28rem;
@@ -552,6 +1079,29 @@ html.has-custom-cursor [contenteditable="true"] {
 }
 
 @keyframes agentBubbleIn {
+  /* Demos hold their finished frame; nothing should keep moving. */
+  .demo-wave > span,
+  .demo-pulse,
+  .demo-caret,
+  .gd-field::before,
+  .gd-eye-body,
+  .gd-glass-in,
+  .gd-rise,
+  .gd-media-in,
+  .gd-tile-in,
+  .gd-compact-in,
+  .gd-bob,
+  .gd-breathe,
+  .gd-ring::after,
+  .gd-glass[data-state="searching"]::after {
+    animation: none;
+  }
+  .demo-appear,
+  .demo-scene,
+  .demo-draw,
+  .gd-room * {
+    transition: none;
+  }
   0% {
     opacity: 0;
     transform: translateY(10px) scale(0.985);
