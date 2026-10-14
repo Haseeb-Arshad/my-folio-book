@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Link, useLoaderData } from "react-router";
 import { BlurIn } from "../components/header";
 import BuildingStatus from "../components/building-status";
+import { DemoStage, demoFor, type Demo } from "../components/project-demos";
 import { type Project } from "../data/projects";
 import {
   getProjects,
@@ -100,12 +101,111 @@ function ProjectLink({
   );
 }
 
-/* ─── Project card (with optional Summon-style hover preview) ─── */
-function ProjectCard({ p }: { p: Project }) {
+/* ─── Project card pieces ─── */
+function ProjectMark({ p, size }: { p: Project; size: "sm" | "md" }) {
+  const box = size === "md" ? "w-10 h-10 rounded-xl" : "w-8 h-8 rounded-lg";
+  if (p.logo) {
+    return (
+      <div
+        className={`${box} shrink-0 bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm`}
+      >
+        <img
+          src={p.logo}
+          alt={`${p.name} logo`}
+          className="w-full h-full object-contain p-1"
+        />
+      </div>
+    );
+  }
+  return (
+    <div
+      className={`${box} shrink-0 ${p.color} flex items-center justify-center text-white ${
+        size === "md" ? "text-base" : "text-sm"
+      } font-bold shadow-sm`}
+    >
+      {p.letter}
+    </div>
+  );
+}
+
+/* Not an anchor around the card. The title carries the link and stretches
+   an overlay across the whole card, which keeps the card clickable without
+   nesting anchors inside it. */
+function ProjectTitle({ p }: { p: Project }) {
+  const primary = p.live ?? p.code;
+  const overlay =
+    "after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900";
+
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <div className="flex items-center gap-2 min-w-0">
+        <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
+          {isInternal(primary) ? (
+            <Link to={primary} className={overlay}>
+              {p.name}
+            </Link>
+          ) : (
+            <a
+              href={primary}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={overlay}
+            >
+              {p.name}
+            </a>
+          )}
+        </h3>
+        {p.status === "building" && (
+          <BuildingStatus label="Building" logo={p.logo} />
+        )}
+      </div>
+      <span className="text-gray-400 text-xs shrink-0 font-mono">{p.year}</span>
+    </div>
+  );
+}
+
+function ProjectTags({ p }: { p: Project }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 mt-3">
+      {p.stack.map((tag) => (
+        <span
+          key={tag}
+          className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
+        >
+          {tag}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ProjectLinks({ p, className = "" }: { p: Project; className?: string }) {
+  return (
+    <div className={`relative z-10 flex flex-wrap items-center gap-4 ${className}`}>
+      {p.live && <ProjectLink href={p.live} label="Live" external />}
+      {p.links ? (
+        p.links.map((l) => (
+          <ProjectLink key={l.href} href={l.href} label={l.label} external />
+        ))
+      ) : p.code !== p.live ? (
+        /* Company work and closed source have no repository to show, so
+           `code` is set to the live URL. A "Code" link pointing at the
+           product's own site would be calling a marketing page source. */
+        <ProjectLink href={p.code} label="Code" external />
+      ) : null}
+    </div>
+  );
+}
+
+/* ─── Project card ───
+   A project with a demo leads with it: a short loop of the product doing
+   its one thing, so the card shows what it is rather than its landing
+   page. The rest keep the compact row, with the hover preview when they
+   have one. */
+function ProjectCard({ p, demo }: { p: Project; demo?: Demo }) {
   const [showPreview, setShowPreview] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const primary = p.live ?? p.code;
-  const hasPreview = Boolean(p.popup);
+  const hasPreview = !demo && Boolean(p.popup);
 
   const handleEnter = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -115,97 +215,43 @@ function ProjectCard({ p }: { p: Project }) {
     timeoutRef.current = setTimeout(() => setShowPreview(false), 250);
   };
 
+  if (demo) {
+    return (
+      <div className="group relative flex h-full flex-col rounded-2xl border border-gray-100 p-2 hover:border-gray-200 transition-colors">
+        <DemoStage demo={demo} />
+        <div className="flex flex-1 flex-col px-3 pt-4 pb-3">
+          <div className="flex items-center gap-3">
+            <ProjectMark p={p} size="sm" />
+            <div className="min-w-0 flex-1">
+              <ProjectTitle p={p} />
+            </div>
+          </div>
+          <p className="text-gray-500 text-sm mt-2.5 leading-relaxed">
+            {p.tagline}
+          </p>
+          <ProjectTags p={p} />
+          <ProjectLinks p={p} className="mt-auto pt-4" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="relative"
+      className="relative h-full"
       onMouseEnter={hasPreview ? handleEnter : undefined}
       onMouseLeave={hasPreview ? handleLeave : undefined}
     >
-      {/* Not an anchor. The title below carries the link and stretches an
-          overlay across the whole card, which keeps the card clickable
-          without nesting anchors inside it. */}
-      <div className="group relative rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors -mx-1">
+      <div className="group relative h-full rounded-2xl border border-gray-100 p-5 hover:border-gray-200 hover:bg-gray-50/40 transition-colors">
         <div className="flex items-start gap-4">
-          {p.logo ? (
-            <div className="w-10 h-10 shrink-0 rounded-xl bg-white border border-gray-200 flex items-center justify-center overflow-hidden shadow-sm">
-              <img
-                src={p.logo}
-                alt={`${p.name} logo`}
-                className="w-full h-full object-contain p-1"
-              />
-            </div>
-          ) : (
-            <div
-              className={`w-10 h-10 shrink-0 ${p.color} rounded-xl flex items-center justify-center text-white text-base font-bold shadow-sm`}
-            >
-              {p.letter}
-            </div>
-          )}
-
+          <ProjectMark p={p} size="md" />
           <div className="min-w-0 flex-1">
-            <div className="flex items-baseline justify-between gap-3">
-              <div className="flex items-center gap-2 min-w-0">
-                <h3 className="text-gray-900 font-semibold group-hover:underline underline-offset-2 truncate">
-                  {isInternal(primary) ? (
-                    <Link
-                      to={primary}
-                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                    >
-                      {p.name}
-                    </Link>
-                  ) : (
-                    <a
-                      href={primary}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-900"
-                    >
-                      {p.name}
-                    </a>
-                  )}
-                </h3>
-                {p.status === "building" && (
-                  <BuildingStatus label="Building" logo={p.logo} />
-                )}
-              </div>
-              <span className="text-gray-400 text-xs shrink-0 font-mono">
-                {p.year}
-              </span>
-            </div>
-
+            <ProjectTitle p={p} />
             <p className="text-gray-500 text-sm mt-1.5 leading-relaxed">
               {p.tagline}
             </p>
-
-            <div className="flex flex-wrap items-center gap-1.5 mt-3">
-              {p.stack.map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[11px] text-gray-500 bg-gray-100 rounded-md px-2 py-0.5"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-
-            <div className="relative z-10 flex flex-wrap items-center gap-4 mt-4">
-              {p.live && <ProjectLink href={p.live} label="Live" external />}
-              {p.links ? (
-                p.links.map((l) => (
-                  <ProjectLink
-                    key={l.href}
-                    href={l.href}
-                    label={l.label}
-                    external
-                  />
-                ))
-              ) : p.code !== p.live ? (
-                /* Company work and closed source have no repository to show, so
-                   `code` is set to the live URL. A "Code" link pointing at the
-                   product's own site would be calling a marketing page source. */
-                <ProjectLink href={p.code} label="Code" external />
-              ) : null}
-            </div>
+            <ProjectTags p={p} />
+            <ProjectLinks p={p} className="mt-4" />
           </div>
         </div>
       </div>
@@ -228,6 +274,30 @@ function ProjectCard({ p }: { p: Project }) {
       )}
     </div>
   );
+}
+
+/* Which cards take a whole row: no demo, a wide demo, or a half card whose
+   row partner never comes because the next card is full width or there is
+   no next card. */
+function fullRows(projects: Project[]) {
+  const cards = projects.map((p) => {
+    const demo = demoFor(p.name);
+    return { p, demo, full: !demo || Boolean(demo.wide) };
+  });
+  let column = 0;
+  cards.forEach((card, i) => {
+    if (card.full) {
+      column = 0;
+      return;
+    }
+    const next = cards[i + 1];
+    if (column === 0 && (!next || next.full)) {
+      card.full = true;
+      return;
+    }
+    column = (column + 1) % 2;
+  });
+  return cards;
 }
 
 export default function Work() {
@@ -330,10 +400,17 @@ export default function Work() {
         </h3>
       </BlurIn>
 
-      <div className="flex flex-col gap-2">
-        {projects.map((p, i) => (
-          <BlurIn key={p.name} delay={80 + i * 90}>
-            <ProjectCard p={p} />
+      {/* Demo cards pair up in two columns. A project without a demo, or with
+          a wide one, takes the full row, and so does a card that would
+          otherwise sit alone in its row, so the grid never leaves a hole. */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {fullRows(projects).map(({ p, demo, full }, i) => (
+          <BlurIn
+            key={p.name}
+            delay={80 + i * 90}
+            className={full ? "md:col-span-2" : ""}
+          >
+            <ProjectCard p={p} demo={demo} />
           </BlurIn>
         ))}
       </div>

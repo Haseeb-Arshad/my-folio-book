@@ -94,11 +94,12 @@ export const projects: Project[] = [
   {
     name: "Gideon",
     tagline:
-      "A voice-agent platform. You speak, and rather than returning a wall of chat the page composes the answer it needs: a summary, a comparison, the sources behind it, the follow-up worth asking next. Built around a low-latency speech loop, so the interface is the conversation rather than a transcript box under it.",
+      "A voice presence you can talk over. It starts answering before you finish your sentence, stops the moment you interrupt, and puts what it finds on glass cards beside the conversation: profiles, pictures, weather, charts. A private memory keeps what you tell it, and you can correct it or make it forget.",
     year: "2026",
-    stack: ["React 19", "TanStack", "Realtime Voice", "Vite"],
-    live: null,
-    code: "https://github.com/Haseeb-Arshad/talkGideon",
+    stack: ["TanStack Start", "Cloudflare Workers", "Realtime Voice", "PostgreSQL"],
+    live: "https://chatgideon.com",
+    code: "https://github.com/Haseeb-Arshad/chat-gideon",
+    logo: "/logos/gideon.png",
     letter: "G",
     color: "bg-teal-600",
     status: "building",

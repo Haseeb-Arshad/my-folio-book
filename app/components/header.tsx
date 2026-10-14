@@ -5,13 +5,15 @@ import { Link, useLocation } from "react-router";
 function BlurIn({
   children,
   delay = 0,
+  className = "",
 }: {
   children: React.ReactNode;
   delay?: number;
+  className?: string;
 }) {
   return (
     <div
-      className="animate-blur-in"
+      className={`animate-blur-in ${className}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       {children}
