@@ -18,6 +18,8 @@ type Env = {
   AI_USAGE?: KvStore;
   AI_USAGE_SYNC_TOKEN?: string;
   AI_USAGE_ALLOWED_ORIGIN?: string;
+  AI_USAGE_SUPABASE_URL?: string;
+  AI_USAGE_SUPABASE_SECRET_KEY?: string;
 };
 
 type Daily = {
@@ -45,9 +47,11 @@ type Model = {
 };
 
 const STATS_KEY = "public";
-const MAX_BODY_BYTES = 512 * 1024;
+const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const MAX_DAILY_ROWS = 400;
+const MAX_CODEX_ACCOUNTS = 20;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const ACCOUNT_HASH_PATTERN = /^[a-f0-9]{64}$/;
 const PROVIDER_ORDER: ProviderId[] = [
   "claude",
   "codex",
@@ -223,8 +227,97 @@ function normalizeProvider(
   };
 }
 
+type CodexAccount = {
+  accountId: string;
+  label: string;
+  daily: Daily[];
+};
+
+function normalizeCodexAccounts(
+  value: unknown,
+  fallbackDaily: Daily[],
+): CodexAccount[] | null {
+  if (value === undefined) {
+    return fallbackDaily.length > 0
+      ? [{ accountId: "unattributed", label: "Unattributed history", daily: fallbackDaily }]
+      : [];
+  }
+
+  if (!Array.isArray(value) || value.length > MAX_CODEX_ACCOUNTS) {
+    return null;
+  }
+
+  const accounts: CodexAccount[] = [];
+  const seenIds = new Set<string>();
+  const seenLabels = new Set<string>();
+
+  for (const item of value) {
+    if (!isRecord(item)) {
+      return null;
+    }
+
+    const accountId = item.accountHash;
+    const label = item.label;
+    const daily = normalizeDaily(item.daily);
+    const validUnattributed = accountId === "unattributed" && label === "Unattributed history";
+    const validAccount =
+      typeof accountId === "string" &&
+      ACCOUNT_HASH_PATTERN.test(accountId) &&
+      typeof label === "string" &&
+      /^Codex account [1-9]\d{0,2}$/.test(label);
+
+    if (
+      (!validUnattributed && !validAccount) ||
+      !daily ||
+      seenIds.has(accountId as string) ||
+      seenLabels.has(label as string)
+    ) {
+      return null;
+    }
+
+    seenIds.add(accountId as string);
+    seenLabels.add(label as string);
+    accounts.push({ accountId: accountId as string, label: label as string, daily });
+  }
+
+  return accounts;
+}
+
+function normalizePublicAccounts(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const seenLabels = new Set<string>();
+  const accounts: Array<Record<string, unknown>> = [];
+
+  for (const item of value.slice(0, MAX_CODEX_ACCOUNTS)) {
+    if (!isRecord(item) || typeof item.label !== "string") {
+      continue;
+    }
+
+    const label = item.label;
+    const validLabel =
+      label === "Unattributed history" ||
+      /^Codex account [1-9]\d{0,2}$/.test(label);
+    const daily = normalizeDaily(item.daily);
+
+    if (!validLabel || !daily || seenLabels.has(label)) {
+      continue;
+    }
+
+    seenLabels.add(label);
+    accounts.push({ label, surface: "local", daily });
+  }
+
+  return accounts;
+}
+
 function normalizeSnapshot(value: unknown): Record<string, unknown> | null {
-  if (!isRecord(value) || value.schemaVersion !== 1) {
+  if (
+    !isRecord(value) ||
+    (value.schemaVersion !== 1 && value.schemaVersion !== 2)
+  ) {
     return null;
   }
 
@@ -263,15 +356,59 @@ function normalizeSnapshot(value: unknown): Record<string, unknown> | null {
     return null;
   }
 
+  const codexProvider = providers.find((provider) => provider.id === "codex");
+  const accounts = normalizePublicAccounts(value.accounts);
+  const legacyAccounts =
+    accounts.length > 0
+      ? accounts
+      : codexProvider && Array.isArray(codexProvider.daily)
+        ? normalizePublicAccounts([
+            { label: "Unattributed history", daily: codexProvider.daily },
+          ])
+        : [];
+
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     source: { name: "slopmeter", version: source.version.slice(0, 40) },
     generatedAt,
     range: { start, end },
     all,
     providers,
     missingProviders: [...new Set(missingProviders)],
+    accounts: legacyAccounts,
   };
+}
+
+function normalizeIncomingSnapshot(value: unknown): {
+  snapshot: Record<string, unknown>;
+  accounts: CodexAccount[];
+} | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const snapshot = normalizeSnapshot(value);
+  if (!snapshot) {
+    return null;
+  }
+
+  const codex = (snapshot.providers as Array<Record<string, unknown>>).find(
+    (provider) => provider.id === "codex",
+  );
+  const codexDaily = codex && Array.isArray(codex.daily) ? (codex.daily as Daily[]) : [];
+  const accounts = normalizeCodexAccounts(value.codexAccounts, codexDaily);
+
+  if (!accounts) {
+    return null;
+  }
+
+  snapshot.accounts = accounts.map(({ label, daily }) => ({
+    label,
+    surface: "local",
+    daily,
+  }));
+
+  return { snapshot, accounts };
 }
 
 function corsHeaders(env: Env): Headers {
@@ -380,6 +517,137 @@ async function getStats(request: Request, env: Env) {
   return jsonResponse(snapshot, 200, env, headers);
 }
 
+type SupabaseUsageRow = {
+  surface: "local";
+  account_id: string;
+  account_label: string;
+  provider_id: ProviderId;
+  usage_date: string;
+  input_tokens: number;
+  output_tokens: number;
+  cache_input_tokens: number;
+  cache_output_tokens: number;
+  total_tokens: number;
+  updated_at: string;
+};
+
+function createSupabaseRows(
+  snapshot: Record<string, unknown>,
+  accounts: CodexAccount[],
+): SupabaseUsageRow[] {
+  const rows: SupabaseUsageRow[] = [];
+  const updatedAt = new Date().toISOString();
+
+  for (const account of accounts) {
+    for (const day of account.daily) {
+      rows.push({
+        surface: "local",
+        account_id: account.accountId,
+        account_label: account.label,
+        provider_id: "codex",
+        usage_date: day.date,
+        input_tokens: day.input,
+        output_tokens: day.output,
+        cache_input_tokens: day.cache.input,
+        cache_output_tokens: day.cache.output,
+        total_tokens: day.total,
+        updated_at: updatedAt,
+      });
+    }
+  }
+
+  for (const provider of snapshot.providers as Array<Record<string, unknown>>) {
+    if (provider.id === "codex" || !Array.isArray(provider.daily)) {
+      continue;
+    }
+
+    for (const value of provider.daily) {
+      const day = value as Daily;
+      rows.push({
+        surface: "local",
+        account_id: "shared",
+        account_label: "Other AI tools",
+        provider_id: provider.id as ProviderId,
+        usage_date: day.date,
+        input_tokens: day.input,
+        output_tokens: day.output,
+        cache_input_tokens: day.cache.input,
+        cache_output_tokens: day.cache.output,
+        total_tokens: day.total,
+        updated_at: updatedAt,
+      });
+    }
+  }
+
+  return rows;
+}
+
+async function persistSupabaseRows(
+  rows: SupabaseUsageRow[],
+  env: Env,
+): Promise<void> {
+  if (!env.AI_USAGE_SUPABASE_URL || !env.AI_USAGE_SUPABASE_SECRET_KEY) {
+    throw new Error("supabase_not_configured");
+  }
+
+  const endpoint = new URL(
+    "/rest/v1/ai_usage_daily",
+    env.AI_USAGE_SUPABASE_URL,
+  );
+  endpoint.searchParams.set(
+    "on_conflict",
+    "surface,account_id,provider_id,usage_date",
+  );
+
+  for (let offset = 0; offset < rows.length; offset += 500) {
+    const batch = rows.slice(offset, offset + 500);
+    let response: Response;
+
+    try {
+      response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          apikey: env.AI_USAGE_SUPABASE_SECRET_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Prefer: "resolution=merge-duplicates,return=minimal",
+        },
+        body: JSON.stringify(batch),
+      });
+    } catch {
+      console.error(
+        JSON.stringify({ event: "ai_usage_supabase_upsert_failed", reason: "network_error" }),
+      );
+      throw new Error("supabase_upsert_failed");
+    }
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      const upstreamCode =
+        isRecord(errorBody) &&
+        typeof errorBody.code === "string" &&
+        /^[A-Z0-9]{4,8}$/.test(errorBody.code)
+          ? errorBody.code
+          : undefined;
+      console.error(
+        JSON.stringify({
+          event: "ai_usage_supabase_upsert_failed",
+          status: response.status,
+          code: upstreamCode,
+          batchSize: batch.length,
+        }),
+      );
+      const error = new Error("supabase_upsert_failed") as Error & {
+        upstreamStatus?: number;
+        upstreamCode?: string;
+      };
+      error.upstreamStatus = response.status;
+      error.upstreamCode = upstreamCode;
+      throw error;
+    }
+  }
+}
+
 async function syncStats(request: Request, env: Env) {
   if (!env.AI_USAGE) {
     return jsonResponse({ error: "stats_storage_not_configured" }, 503, env);
@@ -387,6 +655,10 @@ async function syncStats(request: Request, env: Env) {
 
   if (!env.AI_USAGE_SYNC_TOKEN) {
     return jsonResponse({ error: "sync_secret_not_configured" }, 503, env);
+  }
+
+  if (!env.AI_USAGE_SUPABASE_URL || !env.AI_USAGE_SUPABASE_SECRET_KEY) {
+    return jsonResponse({ error: "usage_database_not_configured" }, 503, env);
   }
 
   if (!(await matchesSecret(request, env.AI_USAGE_SYNC_TOKEN))) {
@@ -413,10 +685,30 @@ async function syncStats(request: Request, env: Env) {
     return jsonResponse({ error: "invalid_json" }, 400, env);
   }
 
-  const snapshot = normalizeSnapshot(parsed);
+  const normalized = normalizeIncomingSnapshot(parsed);
 
-  if (!snapshot) {
+  if (!normalized) {
     return jsonResponse({ error: "invalid_stats_snapshot" }, 422, env);
+  }
+
+  const { snapshot, accounts } = normalized;
+
+  try {
+    await persistSupabaseRows(createSupabaseRows(snapshot, accounts), env);
+  } catch (error) {
+    const failure = error as Error & {
+      upstreamStatus?: number;
+      upstreamCode?: string;
+    };
+    return jsonResponse(
+      {
+        error: "usage_database_unavailable",
+        upstreamStatus: failure.upstreamStatus,
+        upstreamCode: failure.upstreamCode,
+      },
+      502,
+      env,
+    );
   }
 
   await env.AI_USAGE.put(STATS_KEY, JSON.stringify(snapshot));
@@ -426,6 +718,7 @@ async function syncStats(request: Request, env: Env) {
       ok: true,
       generatedAt: snapshot.generatedAt,
       providers: (snapshot.providers as unknown[]).length,
+      codexAccounts: accounts.length,
     },
     200,
     env,

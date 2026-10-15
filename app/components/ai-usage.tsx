@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import {
   type AiUsageDaily,
+  type AiUsageAccount,
   type AiUsageProvider,
   type AiUsageSelection,
   type AiUsageSnapshot,
@@ -93,6 +94,74 @@ function sumProvider(provider: AiUsageProvider) {
       cache: { input: 0, output: 0 },
       total: 0,
     },
+  );
+}
+
+function sumAccount(account: AiUsageAccount) {
+  return account.daily.reduce(
+    (sum, day) => ({
+      input: sum.input + day.input,
+      output: sum.output + day.output,
+      total: sum.total + day.total,
+    }),
+    { input: 0, output: 0, total: 0 },
+  );
+}
+
+function CodexAccountSummary({
+  accounts,
+  range,
+}: {
+  accounts: AiUsageAccount[];
+  range: AiUsageSnapshot["range"];
+}) {
+  return (
+    <section className="mt-7 border-t border-gray-100 pt-5" aria-labelledby="codex-account-usage-title">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h3 id="codex-account-usage-title" className="text-sm font-medium text-gray-900">
+            Codex accounts
+          </h3>
+          <p className="mt-1 text-xs text-gray-500">
+            Local session history · {formatSyncDate(range.start)}–{formatSyncDate(range.end)}
+          </p>
+        </div>
+      </div>
+
+      {accounts.length === 0 ? (
+        <p className="mt-4 text-sm text-gray-500">
+          Account totals will appear after the next hourly sync.
+        </p>
+      ) : (
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[420px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 text-left text-[10px] uppercase tracking-[0.12em] text-gray-400">
+                <th scope="col" className="py-2 pr-4 font-medium">Account</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Input</th>
+                <th scope="col" className="px-3 py-2 text-right font-medium">Output</th>
+                <th scope="col" className="py-2 pl-3 text-right font-medium">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {accounts.map((account) => {
+                const totals = sumAccount(account);
+                return (
+                  <tr key={account.label} className="border-b border-gray-50 last:border-0">
+                    <th scope="row" className="py-3 pr-4 text-left font-medium text-gray-800">
+                      {account.label}
+                    </th>
+                    <td className="px-3 py-3 text-right tabular-nums text-gray-600">{formatTokenCount(totals.input)}</td>
+                    <td className="px-3 py-3 text-right tabular-nums text-gray-600">{formatTokenCount(totals.output)}</td>
+                    <td className="py-3 pl-3 text-right tabular-nums font-medium text-gray-900">{formatTokenCount(totals.total)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -430,8 +499,14 @@ export default function AiUsage({
               compact={selection === "all"}
             />
           )}
+          {selection === "all" && (
+            <CodexAccountSummary
+              accounts={snapshot.accounts ?? []}
+              range={snapshot.range}
+            />
+          )}
           <p className="mt-5 text-[11px] text-gray-400">
-            Updated {formatSyncDate(snapshot.generatedAt)} · Synced every 4 hours
+            Updated {formatSyncDate(snapshot.generatedAt)} · Synced hourly
           </p>
         </>
       )}

@@ -52,8 +52,14 @@ export type AiUsageProvider = {
   insights?: AiUsageInsights;
 };
 
+export type AiUsageAccount = {
+  label: string;
+  surface: "local";
+  daily: AiUsageDaily[];
+};
+
 export type AiUsageSnapshot = {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
   source: {
     name: "slopmeter";
     version: string;
@@ -66,6 +72,7 @@ export type AiUsageSnapshot = {
   all: AiUsageProvider;
   providers: AiUsageProvider[];
   missingProviders: AiUsageProviderId[];
+  accounts?: AiUsageAccount[];
 };
 
 export const AI_USAGE_PROVIDER_ORDER: AiUsageProviderId[] = [
@@ -244,6 +251,40 @@ function normalizeProvider(
   };
 }
 
+function normalizeAccounts(value: unknown): AiUsageAccount[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const seenLabels = new Set<string>();
+  const accounts: AiUsageAccount[] = [];
+
+  for (const item of value.slice(0, 20)) {
+    if (!isRecord(item) || typeof item.label !== "string") {
+      continue;
+    }
+
+    const label = item.label;
+    if (
+      (label !== "Unattributed history" &&
+        !/^Codex account [1-9]\d{0,2}$/.test(label)) ||
+      seenLabels.has(label)
+    ) {
+      continue;
+    }
+
+    const daily = normalizeDaily(item.daily);
+    if (!daily) {
+      continue;
+    }
+
+    seenLabels.add(label);
+    accounts.push({ label, surface: "local", daily });
+  }
+
+  return accounts;
+}
+
 export function normalizeAiUsageSnapshot(
   value: unknown,
 ): AiUsageSnapshot | null {
@@ -279,7 +320,7 @@ export function normalizeAiUsageSnapshot(
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: value.schemaVersion === 2 ? 2 : 1,
     source: {
       name: "slopmeter",
       version:
@@ -292,5 +333,6 @@ export function normalizeAiUsageSnapshot(
     all,
     providers,
     missingProviders: [...new Set(missingProviders)],
+    accounts: normalizeAccounts(value.accounts),
   };
 }

@@ -1,7 +1,18 @@
 import { execFile } from "node:child_process";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { dirname, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
+import {
+  link,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
+import { homedir, tmpdir } from "node:os";
+import { createInterface } from "node:readline";
+import { dirname, join, relative, resolve } from "node:path";
 import { loadEnvFile } from "node:process";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
@@ -202,7 +213,7 @@ function aggregateProviders(providers, start, end) {
       current.total += day.total;
       dailyByDate.set(day.date, current);
 
-      for (const model of day.breakdown) {
+      for (const model of day.breakdown ?? []) {
         const key = provider.id + ":" + model.name;
         const existing = models.get(key) || {
           name: provider.label + " / " + model.name,
@@ -264,7 +275,7 @@ function aggregateProviders(providers, start, end) {
   };
 }
 
-async function runSlopmeter(providerId, outputPath) {
+async function runSlopmeter(providerId, outputPath, codexHome) {
   const executable = process.platform === "win32" ? "npx.cmd" : "npx";
 
   try {
@@ -281,6 +292,9 @@ async function runSlopmeter(providerId, outputPath) {
       ],
       {
         cwd: root,
+        env: codexHome
+          ? { ...process.env, CODEX_HOME: codexHome }
+          : process.env,
         // Windows exposes npx as a .cmd shim; Node needs a shell to launch it.
         shell: process.platform === "win32",
         windowsHide: true,
@@ -303,6 +317,219 @@ async function runSlopmeter(providerId, outputPath) {
 
     return null;
   }
+}
+
+async function listJsonlFiles(rootPath) {
+  const files = [];
+  const pending = [rootPath];
+
+  while (pending.length > 0) {
+    const directory = pending.pop();
+    let entries;
+
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch (error) {
+      if (error?.code === "ENOENT") {
+        continue;
+      }
+      throw error;
+    }
+
+    for (const entry of entries) {
+      const path = join(directory, entry.name);
+
+      if (entry.isDirectory()) {
+        pending.push(path);
+      } else if (entry.isFile() && path.endsWith(".jsonl")) {
+        files.push(path);
+      }
+    }
+  }
+
+  return files;
+}
+
+async function readCreatorAccountIds(filePath) {
+  const ids = new Set();
+  const reader = createInterface({
+    input: createReadStream(filePath, { encoding: "utf8" }),
+    crlfDelay: Infinity,
+  });
+  let inspectedLines = 0;
+
+  for await (const line of reader) {
+    inspectedLines += 1;
+
+    if (!line) {
+      continue;
+    }
+
+    let record;
+
+    try {
+      record = JSON.parse(line);
+    } catch {
+      continue;
+    }
+
+    const pending = [record];
+
+    while (pending.length > 0) {
+      const value = pending.pop();
+
+      if (!value || typeof value !== "object") {
+        continue;
+      }
+
+      for (const [key, child] of Object.entries(value)) {
+        if (key === "creator_account_id" && typeof child === "string" && child) {
+          ids.add(child);
+        }
+
+        if (child && typeof child === "object") {
+          pending.push(child);
+        }
+      }
+    }
+
+    // Codex writes creator_account_id in the session metadata near the start.
+    // Avoid scanning every message in large sessions just to identify account.
+    if (ids.size > 1 || inspectedLines >= 10) {
+      break;
+    }
+  }
+
+  return ids;
+}
+
+function accountLabelPath() {
+  if (process.env.AI_USAGE_ACCOUNT_LABELS_PATH?.trim()) {
+    return resolve(process.env.AI_USAGE_ACCOUNT_LABELS_PATH.trim());
+  }
+
+  const localAppData =
+    process.env.LOCALAPPDATA?.trim() || join(homedir(), "AppData", "Local");
+  return join(localAppData, "HaseebAiUsage", "account-labels.json");
+}
+
+async function loadAccountLabels() {
+  const path = accountLabelPath();
+
+  try {
+    const saved = JSON.parse(await readFile(path, "utf8"));
+    return saved?.version === 1 && saved.accounts && typeof saved.accounts === "object"
+      ? { path, accounts: saved.accounts }
+      : { path, accounts: {} };
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return { path, accounts: {} };
+    }
+    throw error;
+  }
+}
+
+async function assignAccountLabels(accountHashes) {
+  const saved = await loadAccountLabels();
+  const accounts = { ...saved.accounts };
+  const existingNumbers = Object.values(accounts)
+    .map((label) => /^Codex account (\d+)$/.exec(label)?.[1])
+    .filter(Boolean)
+    .map(Number);
+  let nextNumber = Math.max(0, ...existingNumbers);
+  let changed = false;
+
+  for (const accountHash of [...accountHashes].sort()) {
+    if (accountHash === "unattributed" || accounts[accountHash]) {
+      continue;
+    }
+
+    nextNumber += 1;
+    accounts[accountHash] = "Codex account " + nextNumber;
+    changed = true;
+  }
+
+  if (changed) {
+    await mkdir(dirname(saved.path), { recursive: true });
+    await writeFile(
+      saved.path,
+      JSON.stringify({ version: 1, accounts }, null, 2) + "\n",
+      "utf8",
+    );
+  }
+
+  return accounts;
+}
+
+async function createCodexPartitions() {
+  const codexHome = resolve(
+    process.env.CODEX_HOME?.trim() || join(homedir(), ".codex"),
+  );
+  const sessionsRoot = join(codexHome, "sessions");
+  const files = await listJsonlFiles(sessionsRoot);
+
+  if (files.length === 0) {
+    return { partitionRoot: null, groups: [] };
+  }
+
+  const groupedFiles = new Map();
+
+  for (const filePath of files) {
+    const ids = await readCreatorAccountIds(filePath);
+    const rawAccountId = ids.size === 1 ? [...ids][0] : null;
+    const accountHash = rawAccountId
+      ? createHash("sha256").update(rawAccountId).digest("hex")
+      : "unattributed";
+    const group = groupedFiles.get(accountHash) || [];
+    group.push(filePath);
+    groupedFiles.set(accountHash, group);
+  }
+
+  const accountLabels = await assignAccountLabels(
+    [...groupedFiles.keys()].filter((key) => key !== "unattributed"),
+  );
+  const partitionRoot = await mkdtemp(join(codexHome, ".ai-usage-publish-"));
+
+  try {
+    const groups = [];
+
+    for (const [accountHash, accountFiles] of groupedFiles) {
+      const stagedHome = join(partitionRoot, "home-" + accountHash);
+
+      for (const filePath of accountFiles) {
+        const stagedPath = join(
+          stagedHome,
+          "sessions",
+          relative(sessionsRoot, filePath),
+        );
+        await mkdir(dirname(stagedPath), { recursive: true });
+        // Hard links partition sessions without copying prompt or tool content.
+        await link(filePath, stagedPath);
+      }
+
+      groups.push({
+        accountHash,
+        label:
+          accountHash === "unattributed"
+            ? "Unattributed history"
+            : accountLabels[accountHash],
+        codexHome: stagedHome,
+      });
+    }
+
+    return { partitionRoot, groups };
+  } catch (error) {
+    await rm(partitionRoot, { recursive: true, force: true });
+    throw error;
+  }
+}
+
+function strippedAccount(account) {
+  return {
+    accountHash: account.accountHash,
+    label: account.label,
+    daily: account.provider.daily.map(({ breakdown, ...day }) => day),
+  };
 }
 
 async function main() {
@@ -331,12 +558,56 @@ async function main() {
   const workDir = await mkdtemp(
     resolve(tmpdir(), "portfolio-ai-usage-"),
   );
+  let partitionRoot = null;
 
   try {
     const successful = [];
+    const codexAccounts = [];
     let range = null;
 
+    if (requestedProviders.includes("codex")) {
+      const partitions = await createCodexPartitions();
+      partitionRoot = partitions.partitionRoot;
+      const accountProviders = [];
+
+      for (const account of partitions.groups) {
+        const payload = await runSlopmeter(
+          "codex",
+          resolve(workDir, "codex-" + account.accountHash + ".json"),
+          account.codexHome,
+        );
+        const provider = payload ? normalizeProvider("codex", payload) : null;
+
+        if (!provider) {
+          continue;
+        }
+
+        range ||= { start: payload.start, end: payload.end };
+        accountProviders.push({ ...account, provider });
+      }
+
+      if (accountProviders.length > 0) {
+        const combined = aggregateProviders(
+          accountProviders.map((account) => account.provider),
+          range.start,
+          range.end,
+        );
+        successful.push({
+          id: "codex",
+          label: providerLabels.codex,
+          color: providerColors.codex,
+          daily: combined.daily,
+          insights: combined.insights,
+        });
+        codexAccounts.push(...accountProviders.map(strippedAccount));
+      }
+    }
+
     for (const providerId of requestedProviders) {
+      if (providerId === "codex") {
+        continue;
+      }
+
       const payload = await runSlopmeter(
         providerId,
         resolve(workDir, providerId + ".json"),
@@ -362,12 +633,13 @@ async function main() {
     );
 
     const snapshot = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       source: { name: "slopmeter", version: slopmeterVersion },
       generatedAt: new Date().toISOString(),
       range,
       all: aggregateProviders(successful, range.start, range.end),
       providers: successful.map(strippedProvider),
+      codexAccounts,
       missingProviders: requestedProviders.filter(
         (providerId) =>
           !successful.some((provider) => provider.id === providerId),
@@ -419,6 +691,10 @@ async function main() {
           output: outputPath,
           uploaded: !dryRun,
           providers: successful.map((provider) => provider.id),
+          codexAccounts: codexAccounts.map((account) => ({
+            label: account.label,
+            totalTokens: account.daily.reduce((sum, day) => sum + day.total, 0),
+          })),
           missingProviders: snapshot.missingProviders,
           generatedAt: snapshot.generatedAt,
         },
@@ -428,6 +704,9 @@ async function main() {
     );
   } finally {
     await rm(workDir, { recursive: true, force: true });
+    if (partitionRoot) {
+      await rm(partitionRoot, { recursive: true, force: true });
+    }
   }
 }
 
