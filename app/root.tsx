@@ -13,6 +13,7 @@ import "./app.css";
 import Header, { Nav } from "./components/header";
 import Cursor from "./components/cursor";
 import PostHogAnalytics from "./components/posthog-analytics";
+import { Analytics } from "@vercel/analytics/react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -45,6 +46,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             an `isolation` on an ancestor would trap the blend in that
             subtree. */}
         {!isOwner && <Cursor />}
+        <Analytics />
         <ScrollRestoration />
         <Scripts />
       </body>
