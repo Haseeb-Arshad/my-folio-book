@@ -505,9 +505,6 @@ export default function AiUsage({
               range={snapshot.range}
             />
           )}
-          <p className="mt-5 text-[11px] text-gray-400">
-            Updated {formatSyncDate(snapshot.generatedAt)} · Synced hourly
-          </p>
         </>
       )}
     </section>

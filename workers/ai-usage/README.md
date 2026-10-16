@@ -3,8 +3,9 @@
 This Worker is the small public edge service for the portfolio's AI activity
 snapshot. The local publisher reads local agent histories, reduces them to
 daily aggregate usage, and sends one authenticated JSON snapshot to `/sync`.
-The Worker upserts those daily rows to Supabase, then updates its public KV
-snapshot. The homepage reads `/stats`.
+The Worker upserts those daily rows to Supabase, reads saved Codex account rows
+to build a durable account summary, then updates its public KV snapshot. The
+homepage reads `/stats`.
 
 The Worker never receives raw prompts, project paths, session files, raw
 account identifiers, or local authentication databases. Codex account IDs are
@@ -79,9 +80,11 @@ usage.
 The Supabase table is `public.ai_usage_daily`. It contains one row per source,
 account, provider, and date. Row-level security is forced, and anonymous and
 authenticated roles have no table grants. The Worker uses its server-only
-Supabase secret to write rows. `/sync` publishes the KV snapshot only after
-every Supabase upsert batch succeeds. The hourly job collects from local
-session files and sends aggregates to Cloudflare and Supabase.
+Supabase secret to write rows and read the saved Codex account rows. `/sync`
+publishes the KV snapshot only after the Supabase upserts and account-history
+read succeed. This keeps previously recorded accounts visible after the local
+Codex account changes. The hourly job collects from local session files and
+sends aggregates to Cloudflare and Supabase.
 
 To generate a local artifact without uploading it:
 

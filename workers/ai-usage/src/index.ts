@@ -50,6 +50,7 @@ const STATS_KEY = "public";
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const MAX_DAILY_ROWS = 400;
 const MAX_CODEX_ACCOUNTS = 20;
+const SUPABASE_READ_PAGE_SIZE = 500;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const ACCOUNT_HASH_PATTERN = /^[a-f0-9]{64}$/;
 const PROVIDER_ORDER: ProviderId[] = [
@@ -648,6 +649,207 @@ async function persistSupabaseRows(
   }
 }
 
+type PersistedCodexRow = {
+  account_id: unknown;
+  account_label: unknown;
+  usage_date: unknown;
+  input_tokens: unknown;
+  output_tokens: unknown;
+  cache_input_tokens: unknown;
+  cache_output_tokens: unknown;
+  total_tokens: unknown;
+  updated_at: unknown;
+};
+
+function normalizePersistedCodexAccounts(
+  rows: PersistedCodexRow[],
+): Array<Record<string, unknown>> {
+  const grouped = new Map<
+    string,
+    {
+      label: string;
+      labelUpdatedAt: number;
+      daily: Map<string, { value: Daily; updatedAt: number }>;
+    }
+  >();
+
+  for (const row of rows) {
+    const accountId = row.account_id;
+    const label = row.account_label;
+    const date = validDate(row.usage_date);
+    const input = nonNegativeInteger(row.input_tokens);
+    const output = nonNegativeInteger(row.output_tokens);
+    const cacheInput = nonNegativeInteger(row.cache_input_tokens);
+    const cacheOutput = nonNegativeInteger(row.cache_output_tokens);
+    const total = nonNegativeInteger(row.total_tokens);
+    const updatedAt =
+      typeof row.updated_at === "string" ? Date.parse(row.updated_at) : NaN;
+    const validUnattributed =
+      accountId === "unattributed" && label === "Unattributed history";
+    const validAccount =
+      typeof accountId === "string" &&
+      ACCOUNT_HASH_PATTERN.test(accountId) &&
+      typeof label === "string" &&
+      /^Codex account [1-9]\d{0,2}$/.test(label);
+
+    if (
+      (!validUnattributed && !validAccount) ||
+      !date ||
+      input === null ||
+      output === null ||
+      cacheInput === null ||
+      cacheOutput === null ||
+      total === null
+    ) {
+      continue;
+    }
+
+    const stableAccountId = accountId as string;
+    const stableLabel = label as string;
+    const current = grouped.get(stableAccountId) || {
+      label: stableLabel,
+      labelUpdatedAt: Number.NEGATIVE_INFINITY,
+      daily: new Map<string, { value: Daily; updatedAt: number }>(),
+    };
+    const safeUpdatedAt = Number.isFinite(updatedAt) ? updatedAt : 0;
+
+    if (safeUpdatedAt >= current.labelUpdatedAt) {
+      current.label = stableLabel;
+      current.labelUpdatedAt = safeUpdatedAt;
+    }
+
+    const existingDay = current.daily.get(date);
+    if (!existingDay || safeUpdatedAt >= existingDay.updatedAt) {
+      current.daily.set(date, {
+        value: {
+          date,
+          input,
+          output,
+          cache: { input: cacheInput, output: cacheOutput },
+          total,
+        },
+        updatedAt: safeUpdatedAt,
+      });
+    }
+
+    grouped.set(stableAccountId, current);
+  }
+
+  if (grouped.size > MAX_CODEX_ACCOUNTS) {
+    throw new Error("too_many_persisted_codex_accounts");
+  }
+
+  return [...grouped.values()]
+    .map(({ label, daily }) => ({
+      label,
+      surface: "local",
+      daily: [...daily.values()]
+        .map(({ value }) => value)
+        .sort((left, right) => left.date.localeCompare(right.date)),
+    }))
+    .sort((left, right) => {
+      const leftLabel = left.label as string;
+      const rightLabel = right.label as string;
+      if (leftLabel === "Unattributed history") return 1;
+      if (rightLabel === "Unattributed history") return -1;
+      return (
+        Number(/^Codex account (\d+)$/.exec(leftLabel)?.[1] || 0) -
+        Number(/^Codex account (\d+)$/.exec(rightLabel)?.[1] || 0)
+      );
+    });
+}
+
+async function readPersistedCodexAccounts(
+  snapshot: Record<string, unknown>,
+  env: Env,
+): Promise<Array<Record<string, unknown>>> {
+  if (!env.AI_USAGE_SUPABASE_URL || !env.AI_USAGE_SUPABASE_SECRET_KEY) {
+    throw new Error("supabase_not_configured");
+  }
+
+  const range = snapshot.range as Record<string, unknown>;
+  const start = validDate(range.start);
+  const end = validDate(range.end);
+  if (!start || !end || start > end) {
+    throw new Error("invalid_snapshot_range");
+  }
+
+  const endpoint = new URL(
+    "/rest/v1/ai_usage_daily",
+    env.AI_USAGE_SUPABASE_URL,
+  );
+  endpoint.searchParams.set(
+    "select",
+    "account_id,account_label,usage_date,input_tokens,output_tokens,cache_input_tokens,cache_output_tokens,total_tokens,updated_at",
+  );
+  endpoint.searchParams.set("surface", "eq.local");
+  endpoint.searchParams.set("provider_id", "eq.codex");
+  endpoint.searchParams.append("usage_date", "gte." + start);
+  endpoint.searchParams.append("usage_date", "lte." + end);
+  endpoint.searchParams.set("order", "account_id.asc,usage_date.asc");
+  endpoint.searchParams.set("limit", String(SUPABASE_READ_PAGE_SIZE));
+
+  const rows: PersistedCodexRow[] = [];
+  const maxRows = MAX_CODEX_ACCOUNTS * MAX_DAILY_ROWS;
+
+  for (let offset = 0; offset <= maxRows; offset += SUPABASE_READ_PAGE_SIZE) {
+    endpoint.searchParams.set("offset", String(offset));
+    let response: Response;
+
+    try {
+      response = await fetch(endpoint, {
+        headers: {
+          apikey: env.AI_USAGE_SUPABASE_SECRET_KEY,
+          Accept: "application/json",
+          Range: `${offset}-${offset + SUPABASE_READ_PAGE_SIZE - 1}`,
+          "Range-Unit": "items",
+        },
+      });
+    } catch {
+      console.error(
+        JSON.stringify({ event: "ai_usage_supabase_read_failed", reason: "network_error" }),
+      );
+      throw new Error("supabase_read_failed");
+    }
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      const upstreamCode =
+        isRecord(errorBody) &&
+        typeof errorBody.code === "string" &&
+        /^[A-Z0-9]{4,8}$/.test(errorBody.code)
+          ? errorBody.code
+          : undefined;
+      console.error(
+        JSON.stringify({
+          event: "ai_usage_supabase_read_failed",
+          status: response.status,
+          code: upstreamCode,
+          offset,
+        }),
+      );
+      throw new Error("supabase_read_failed");
+    }
+
+    const page: unknown = await response.json().catch(() => null);
+    if (!Array.isArray(page)) {
+      throw new Error("invalid_supabase_read_response");
+    }
+
+    rows.push(...(page as PersistedCodexRow[]));
+
+    if (page.length < SUPABASE_READ_PAGE_SIZE) {
+      break;
+    }
+
+    if (rows.length > maxRows) {
+      throw new Error("too_many_persisted_codex_rows");
+    }
+  }
+
+  return normalizePersistedCodexAccounts(rows);
+}
+
 async function syncStats(request: Request, env: Env) {
   if (!env.AI_USAGE) {
     return jsonResponse({ error: "stats_storage_not_configured" }, 503, env);
@@ -692,9 +894,12 @@ async function syncStats(request: Request, env: Env) {
   }
 
   const { snapshot, accounts } = normalized;
+  let publishedAccounts: Array<Record<string, unknown>> = [];
 
   try {
     await persistSupabaseRows(createSupabaseRows(snapshot, accounts), env);
+    publishedAccounts = await readPersistedCodexAccounts(snapshot, env);
+    snapshot.accounts = publishedAccounts;
   } catch (error) {
     const failure = error as Error & {
       upstreamStatus?: number;
@@ -718,7 +923,7 @@ async function syncStats(request: Request, env: Env) {
       ok: true,
       generatedAt: snapshot.generatedAt,
       providers: (snapshot.providers as unknown[]).length,
-      codexAccounts: accounts.length,
+      codexAccounts: publishedAccounts.length,
     },
     200,
     env,
